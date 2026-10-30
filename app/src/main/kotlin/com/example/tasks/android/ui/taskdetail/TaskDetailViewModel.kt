@@ -10,15 +10,15 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.navigation.toRoute
 import com.example.tasks.android.data.LoadState
 import com.example.tasks.android.data.TaskRepository
-import com.example.tasks.android.domain.Clock
-import com.example.tasks.android.domain.Task
 import com.example.tasks.android.ui.components.appContainer
 import com.example.tasks.android.ui.navigation.TaskDetailRoute
+import com.example.tasks.shared.domain.DateProvider
+import com.example.tasks.shared.domain.Task
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
-import java.time.LocalDate
+import kotlinx.datetime.LocalDate
 
 data class TaskDetailUiState(
     val task: Task?,
@@ -28,7 +28,7 @@ data class TaskDetailUiState(
 class TaskDetailViewModel(
     savedStateHandle: SavedStateHandle,
     private val repository: TaskRepository,
-    private val clock: Clock,
+    private val dateProvider: DateProvider,
 ) : ViewModel() {
 
     val taskId: Int = savedStateHandle.toRoute<TaskDetailRoute>().taskId
@@ -36,12 +36,12 @@ class TaskDetailViewModel(
     val uiState: StateFlow<TaskDetailUiState> = repository.state
         .map { state ->
             val task = (state as? LoadState.Loaded)?.tasks?.firstOrNull { it.id == taskId }
-            TaskDetailUiState(task = task, today = clock.today())
+            TaskDetailUiState(task = task, today = dateProvider.today())
         }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = TaskDetailUiState(task = repository.task(taskId), today = clock.today()),
+            initialValue = TaskDetailUiState(task = repository.task(taskId), today = dateProvider.today()),
         )
 
     fun onToggle() = repository.toggle(taskId)
@@ -52,7 +52,7 @@ class TaskDetailViewModel(
         val Factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {
                 val container = appContainer()
-                TaskDetailViewModel(createSavedStateHandle(), container.taskRepository, container.clock)
+                TaskDetailViewModel(createSavedStateHandle(), container.taskRepository, container.dateProvider)
             }
         }
     }

@@ -34,11 +34,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.tasks.android.domain.DateFormatting
-import com.example.tasks.android.domain.Priority
-import java.time.Instant
-import java.time.LocalDate
-import java.time.ZoneOffset
+import com.example.tasks.shared.domain.DateFormatting
+import com.example.tasks.shared.domain.Priority
+import kotlinx.datetime.LocalDate
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -136,7 +134,10 @@ fun TaskEditorScreen(
     }
 }
 
-private fun LocalDate.toUtcMillis(): Long = atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli()
+// DatePicker <-> kotlinx.datetime.LocalDate via epoch days (UTC midnight = whole days since 1970-01-01).
+private const val MILLIS_PER_DAY = 24L * 60 * 60 * 1000
+
+private fun LocalDate.toUtcMillis(): Long = toEpochDays() * MILLIS_PER_DAY
 
 private fun utcMillisToLocalDate(millis: Long): LocalDate =
-    Instant.ofEpochMilli(millis).atZone(ZoneOffset.UTC).toLocalDate()
+    LocalDate.fromEpochDays(millis.floorDiv(MILLIS_PER_DAY))

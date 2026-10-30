@@ -44,6 +44,12 @@ android {
 }
 
 dependencies {
+    // KMP shared module (domain: Task, TaskValidator, TaskFilter, StatsCalculator, ...).
+    // No version: the composite build (includeBuild("../shared") in settings.gradle.kts)
+    // substitutes these coordinates with the local project. kotlinx-datetime comes
+    // transitively (shared exposes it as `api`), so it is not declared here.
+    implementation("com.example.tasks:shared")
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)
 

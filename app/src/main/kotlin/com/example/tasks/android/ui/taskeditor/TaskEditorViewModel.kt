@@ -8,18 +8,18 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.navigation.toRoute
 import com.example.tasks.android.data.TaskRepository
-import com.example.tasks.android.domain.Clock
-import com.example.tasks.android.domain.Priority
-import com.example.tasks.android.domain.Task
-import com.example.tasks.android.domain.TaskValidator
-import com.example.tasks.android.domain.ValidationError
 import com.example.tasks.android.ui.components.appContainer
 import com.example.tasks.android.ui.navigation.TaskEditorRoute
+import com.example.tasks.shared.domain.DateProvider
+import com.example.tasks.shared.domain.Priority
+import com.example.tasks.shared.domain.Task
+import com.example.tasks.shared.domain.TaskValidator
+import com.example.tasks.shared.domain.ValidationError
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import java.time.LocalDate
+import kotlinx.datetime.LocalDate
 
 data class TaskEditorUiState(
     val isNew: Boolean,
@@ -37,7 +37,7 @@ class TaskEditorViewModel(
     savedStateHandle: SavedStateHandle,
     private val repository: TaskRepository,
     private val validator: TaskValidator,
-    clock: Clock,
+    dateProvider: DateProvider,
 ) : ViewModel() {
 
     private val original: Task? = savedStateHandle.toRoute<TaskEditorRoute>().taskId
@@ -51,7 +51,7 @@ class TaskEditorViewModel(
                 title = original?.title ?: "",
                 notes = original?.notes ?: "",
                 priority = original?.priority ?: Priority.MEDIUM,
-                dueDate = original?.dueDate ?: clock.today(),
+                dueDate = original?.dueDate ?: dateProvider.today(),
                 errors = emptyList(),
             ),
         ),
@@ -109,7 +109,7 @@ class TaskEditorViewModel(
                     savedStateHandle = createSavedStateHandle(),
                     repository = container.taskRepository,
                     validator = container.taskValidator,
-                    clock = container.clock,
+                    dateProvider = container.dateProvider,
                 )
             }
         }

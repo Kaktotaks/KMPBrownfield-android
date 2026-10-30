@@ -7,19 +7,19 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.tasks.android.data.LoadState
 import com.example.tasks.android.data.TaskRepository
-import com.example.tasks.android.domain.Clock
-import com.example.tasks.android.domain.SortOrder
-import com.example.tasks.android.domain.StatusFilter
-import com.example.tasks.android.domain.Task
-import com.example.tasks.android.domain.TaskFilter
 import com.example.tasks.android.ui.components.appContainer
+import com.example.tasks.shared.domain.DateProvider
+import com.example.tasks.shared.domain.SortOrder
+import com.example.tasks.shared.domain.StatusFilter
+import com.example.tasks.shared.domain.Task
+import com.example.tasks.shared.domain.TaskFilter
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import java.time.LocalDate
+import kotlinx.datetime.LocalDate
 
 sealed interface TaskListContent {
     data object Loading : TaskListContent
@@ -39,7 +39,7 @@ private data class FilterInput(val query: String, val status: StatusFilter, val 
 
 class TaskListViewModel(
     private val repository: TaskRepository,
-    private val clock: Clock,
+    private val dateProvider: DateProvider,
 ) : ViewModel() {
 
     private val query = MutableStateFlow("")
@@ -61,13 +61,13 @@ class TaskListViewModel(
                 query = input.query,
                 status = input.status,
                 sort = input.sort,
-                today = clock.today(),
+                today = dateProvider.today(),
                 content = content,
             )
         }.stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = TaskListUiState(today = clock.today()),
+            initialValue = TaskListUiState(today = dateProvider.today()),
         )
 
     fun onQueryChange(value: String) {
@@ -92,7 +92,7 @@ class TaskListViewModel(
         val Factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {
                 val container = appContainer()
-                TaskListViewModel(container.taskRepository, container.clock)
+                TaskListViewModel(container.taskRepository, container.dateProvider)
             }
         }
     }

@@ -22,9 +22,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.tasks.android.domain.TaskStats
 import com.example.tasks.android.ui.components.ErrorContent
 import com.example.tasks.android.ui.components.LoadingContent
+import com.example.tasks.shared.domain.TaskStats
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

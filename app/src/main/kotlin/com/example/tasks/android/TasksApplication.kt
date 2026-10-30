@@ -4,9 +4,9 @@ import android.app.Application
 import com.example.tasks.android.data.HttpTaskApi
 import com.example.tasks.android.data.TaskApi
 import com.example.tasks.android.data.TaskRepository
-import com.example.tasks.android.domain.Clock
-import com.example.tasks.android.domain.SystemClock
-import com.example.tasks.android.domain.TaskValidator
+import com.example.tasks.shared.domain.DateProvider
+import com.example.tasks.shared.domain.SystemDateProvider
+import com.example.tasks.shared.domain.TaskValidator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -14,10 +14,10 @@ import kotlinx.coroutines.launch
 
 /** Simple manual DI container: one instance of each dependency for the whole app. */
 class AppContainer {
-    val clock: Clock = SystemClock
+    val dateProvider: DateProvider = SystemDateProvider
     val taskApi: TaskApi = HttpTaskApi()
-    val taskRepository: TaskRepository = TaskRepository(taskApi, clock)
-    val taskValidator: TaskValidator = TaskValidator(clock)
+    val taskRepository: TaskRepository = TaskRepository(taskApi, dateProvider)
+    val taskValidator: TaskValidator = TaskValidator(dateProvider)
 }
 
 class TasksApplication : Application() {

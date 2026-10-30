@@ -10,8 +10,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.example.tasks.android.domain.Priority
 import com.example.tasks.android.ui.theme.TaskColors
+import com.example.tasks.shared.domain.Priority
 
 fun Priority.color(): Color = when (this) {
     Priority.LOW -> TaskColors.Low

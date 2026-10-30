@@ -7,10 +7,10 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.tasks.android.data.LoadState
 import com.example.tasks.android.data.TaskRepository
-import com.example.tasks.android.domain.Clock
-import com.example.tasks.android.domain.StatsCalculator
-import com.example.tasks.android.domain.TaskStats
 import com.example.tasks.android.ui.components.appContainer
+import com.example.tasks.shared.domain.DateProvider
+import com.example.tasks.shared.domain.StatsCalculator
+import com.example.tasks.shared.domain.TaskStats
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
@@ -25,7 +25,7 @@ sealed interface StatsUiState {
 
 class StatsViewModel(
     private val repository: TaskRepository,
-    private val clock: Clock,
+    private val dateProvider: DateProvider,
 ) : ViewModel() {
 
     val uiState: StateFlow<StatsUiState> = repository.state
@@ -33,7 +33,7 @@ class StatsViewModel(
             when (state) {
                 LoadState.Loading -> StatsUiState.Loading
                 LoadState.Error -> StatsUiState.Error
-                is LoadState.Loaded -> StatsUiState.Loaded(StatsCalculator.calculate(state.tasks, clock.today()))
+                is LoadState.Loaded -> StatsUiState.Loaded(StatsCalculator.calculate(state.tasks, dateProvider.today()))
             }
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), StatsUiState.Loading)
@@ -46,7 +46,7 @@ class StatsViewModel(
         val Factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {
                 val container = appContainer()
-                StatsViewModel(container.taskRepository, container.clock)
+                StatsViewModel(container.taskRepository, container.dateProvider)
             }
         }
     }

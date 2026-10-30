@@ -44,16 +44,16 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.tasks.android.domain.DateFormatting
-import com.example.tasks.android.domain.SortOrder
-import com.example.tasks.android.domain.StatusFilter
-import com.example.tasks.android.domain.Task
 import com.example.tasks.android.ui.components.EmptyContent
 import com.example.tasks.android.ui.components.ErrorContent
 import com.example.tasks.android.ui.components.LoadingContent
 import com.example.tasks.android.ui.components.PriorityBadge
 import com.example.tasks.android.ui.theme.TaskColors
-import java.time.LocalDate
+import com.example.tasks.shared.domain.DateFormatting
+import com.example.tasks.shared.domain.SortOrder
+import com.example.tasks.shared.domain.StatusFilter
+import com.example.tasks.shared.domain.Task
+import kotlinx.datetime.LocalDate
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

@@ -1,16 +1,18 @@
 package com.example.tasks.android.data
 
-import com.example.tasks.android.domain.Clock
-import com.example.tasks.android.domain.Priority
-import com.example.tasks.android.domain.Task
+import com.example.tasks.shared.domain.DateProvider
+import com.example.tasks.shared.domain.Priority
+import com.example.tasks.shared.domain.Task
+import com.example.tasks.shared.domain.TodoMapper
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import java.time.LocalDate
+import kotlinx.datetime.LocalDate
 
-// KMP-shared candidate: single in-memory source of truth, no Android dependencies.
+// Data layer stays in the app for now (KMP step 1 moved only the domain to ../shared).
+// Single in-memory source of truth, no Android dependencies.
 sealed interface LoadState {
     data object Loading : LoadState
     data object Error : LoadState
@@ -19,7 +21,7 @@ sealed interface LoadState {
 
 class TaskRepository(
     private val api: TaskApi,
-    private val clock: Clock,
+    private val dateProvider: DateProvider,
 ) {
     private val _state = MutableStateFlow<LoadState>(LoadState.Loading)
     val state: StateFlow<LoadState> = _state.asStateFlow()
@@ -28,8 +30,10 @@ class TaskRepository(
     suspend fun load() {
         _state.value = LoadState.Loading
         _state.value = try {
-            val today = clock.today()
-            LoadState.Loaded(api.fetchTodos().map { it.toTask(today) })
+            val today = dateProvider.today()
+            LoadState.Loaded(
+                api.fetchTodos().map { dto -> TodoMapper.map(dto.id, dto.title, dto.completed, today) },
+            )
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
