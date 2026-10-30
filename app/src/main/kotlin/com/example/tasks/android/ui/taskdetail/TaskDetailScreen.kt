@@ -35,15 +35,17 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.tasks.android.ui.components.EmptyContent
 import com.example.tasks.android.ui.components.PriorityBadge
+import com.example.tasks.android.ui.components.TaskDetailViewModelFactory
 import com.example.tasks.android.ui.theme.TaskColors
 import com.example.tasks.shared.domain.DateFormatting
+import com.example.tasks.shared.presentation.TaskDetailViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TaskDetailScreen(
     onBack: () -> Unit,
     onEdit: (Int) -> Unit,
-    viewModel: TaskDetailViewModel = viewModel(factory = TaskDetailViewModel.Factory),
+    viewModel: TaskDetailViewModel = viewModel(factory = TaskDetailViewModelFactory),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     var confirmDelete by remember { mutableStateOf(false) }

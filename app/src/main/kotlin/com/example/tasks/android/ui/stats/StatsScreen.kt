@@ -24,12 +24,15 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.tasks.android.ui.components.ErrorContent
 import com.example.tasks.android.ui.components.LoadingContent
+import com.example.tasks.android.ui.components.StatsViewModelFactory
 import com.example.tasks.shared.domain.TaskStats
+import com.example.tasks.shared.presentation.StatsUiState
+import com.example.tasks.shared.presentation.StatsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StatsScreen(
-    viewModel: StatsViewModel = viewModel(factory = StatsViewModel.Factory),
+    viewModel: StatsViewModel = viewModel(factory = StatsViewModelFactory),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 

@@ -1,8 +1,9 @@
-# TasksAndroid — KMP step 2 (domain + data from `../shared`)
+# TasksAndroid — KMP step 4 (domain + data + ViewModels from `../shared`)
 
 Native Android twin of the iOS Tasks app, built from `../SPEC.md`. Brownfield KMP migration,
-step 2: the **domain** and **data** layers now come from the Kotlin Multiplatform library in
-`../shared` (see "Shared (KMP) integration" below). Only UI/ViewModels and DI stay in the app.
+step 4: the **domain**, **data** and **presentation** (ViewModels + UiState) layers now come from the
+Kotlin Multiplatform library in `../shared` (see "Shared (KMP) integration" below). The app itself is
+only UI (Compose screens), navigation and DI (`AppContainer` + ViewModel factories).
 
 ## Stack
 - AGP 9.1.1 (built-in Kotlin), Kotlin 2.4.21, Gradle 9.5.1, compileSdk/targetSdk 37, minSdk 26
@@ -15,11 +16,11 @@ step 2: the **domain** and **data** layers now come from the Kotlin Multiplatfor
 
 ## Structure (`app/src/main/kotlin/com/example/tasks/android/`)
 ```
-ui/tasklist      TaskListScreen + TaskListViewModel
-ui/taskdetail    TaskDetailScreen + TaskDetailViewModel
-ui/taskeditor    TaskEditorScreen + TaskEditorViewModel (full-screen dialog destination ~ iOS sheet)
-ui/stats         StatsScreen + StatsViewModel
-ui/components    PriorityBadge, load/error/empty states, ViewModel factory helper
+ui/tasklist      TaskListScreen
+ui/taskdetail    TaskDetailScreen
+ui/taskeditor    TaskEditorScreen (full-screen dialog destination ~ iOS sheet)
+ui/stats         StatsScreen
+ui/components    PriorityBadge, load/error/empty states, ViewModelFactories (Android-only DI for shared VMs)
 ui/navigation    Routes + TasksRoot (Scaffold + NavigationBar + NavHost)
 ui/theme         Material 3 theme + semantic colors
 MainActivity.kt, TasksApplication.kt
@@ -27,7 +28,9 @@ MainActivity.kt, TasksApplication.kt
 Domain classes (`Task`, `Priority`, `TaskValidator`, `ValidationError`, `TaskFilter` + `StatusFilter` /
 `SortOrder`, `StatsCalculator` + `TaskStats`, `DateProvider` / `SystemDateProvider`, `DateFormatting`,
 `TodoMapper`) are imported from `com.example.tasks.shared.domain`; the data layer (`TaskApi`,
-`KtorTaskApi`, `TaskRepository`, `LoadState`) from `com.example.tasks.shared.data`.
+`KtorTaskApi`, `TaskRepository`, `LoadState`) from `com.example.tasks.shared.data`; the ViewModels
+(`TaskListViewModel`, `TaskDetailViewModel`, `TaskEditorViewModel`, `StatsViewModel`) and their UiState
+types from `com.example.tasks.shared.presentation`.
 
 Unit tests: the app has none left — domain and repository tests live in `../shared/src/commonTest`.
 
@@ -61,6 +64,25 @@ iOS). The app consumes it through a **Gradle composite build**:
   `../shared` are picked up on the next build — no publishing, no `mavenLocal()`.
 - `kotlinx-datetime` is an `api` dependency of `shared` (`Task.dueDate` is a `LocalDate`), so the
   app gets it transitively and does not declare it.
+- Step 4 — ViewModels from `shared` (`com.example.tasks.shared.presentation`):
+  - `TaskListViewModel(repository, dateProvider)`, `TaskDetailViewModel(taskId, repository, dateProvider)`,
+    `TaskEditorViewModel(taskId, repository, validator, dateProvider)`, `StatsViewModel(repository, dateProvider)`
+    + `TaskListUiState`/`TaskListContent`, `TaskDetailUiState`, `TaskEditorUiState`, `StatsUiState`. Same
+    public API as the old app VMs, so screens only changed imports and the `factory =` argument.
+  - All extend `TasksViewModel : androidx.lifecycle.ViewModel` (shared declares `lifecycle-viewmodel`
+    as `api`). On Android they are **normal androidx ViewModels**: created by `ViewModelProvider`, scoped
+    to the `NavBackStackEntry`, survive configuration changes, `viewModelScope` cancelled in `onCleared()`.
+  - The only change in the VMs: no `SavedStateHandle` (it is Android-only) — `taskId` is a constructor
+    parameter. `TaskEditorRoute.NEW_TASK_ID` forwards `TaskEditorViewModel.NEW_TASK_ID` (`-1`).
+  - What stays in the app (Android-specific DI): `ui/components/ViewModelFactories.kt` —
+    `TaskListViewModelFactory`, `TaskDetailViewModelFactory`, `TaskEditorViewModelFactory`,
+    `StatsViewModelFactory` (`viewModelFactory { initializer { ... } }`). They take dependencies from
+    `AppContainer` and decode the route with `createSavedStateHandle().toRoute<TaskDetailRoute>().taskId`.
+    Screens: `viewModel(factory = TaskListViewModelFactory)` + `collectAsStateWithLifecycle()` (unchanged).
+  - Deleted: `ui/*/…ViewModel.kt` (4 files, incl. their UiState types) and `ui/components/AppViewModelFactory.kt`
+    (its `CreationExtras.appContainer()` helper moved into `ViewModelFactories.kt`).
+  - On iOS the same classes are used without a `ViewModelStoreOwner`, so the Swift side must call
+    `clear()` itself — on Android nothing like that is needed.
 - Step 2 — data layer from `shared` (`com.example.tasks.shared.data`):
   - `TaskApi` + `KtorTaskApi()` — one Ktor client (ContentNegotiation + kotlinx-json, timeouts,
     `expectSuccess`) replaces `HttpTaskApi` (`HttpURLConnection`). The HTTP code is common; only the
@@ -87,4 +109,6 @@ iOS). The app consumes it through a **Gradle composite build**:
 - Done (step 1): `domain/` → `../shared` (`commonMain`), `java.time` → `kotlinx-datetime`.
 - Done (step 2): `data/` → `../shared` — `HttpTaskApi` (`HttpURLConnection`) → `KtorTaskApi`;
   `TaskApi` interface, `TaskRepository` and `LoadState` are shared.
-- Next candidates: shared presentation logic (ViewModel-like state holders), persistence.
+- Done (step 4): ViewModels + UiState → `../shared` (`presentation`); the app keeps UI, navigation and
+  the ViewModel factories.
+- Next candidates: persistence, shared DI (e.g. Koin) to replace the hand-written factories.

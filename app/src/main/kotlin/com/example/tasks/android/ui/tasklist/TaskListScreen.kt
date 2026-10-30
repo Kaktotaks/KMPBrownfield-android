@@ -48,11 +48,14 @@ import com.example.tasks.android.ui.components.EmptyContent
 import com.example.tasks.android.ui.components.ErrorContent
 import com.example.tasks.android.ui.components.LoadingContent
 import com.example.tasks.android.ui.components.PriorityBadge
+import com.example.tasks.android.ui.components.TaskListViewModelFactory
 import com.example.tasks.android.ui.theme.TaskColors
 import com.example.tasks.shared.domain.DateFormatting
 import com.example.tasks.shared.domain.SortOrder
 import com.example.tasks.shared.domain.StatusFilter
 import com.example.tasks.shared.domain.Task
+import com.example.tasks.shared.presentation.TaskListContent
+import com.example.tasks.shared.presentation.TaskListViewModel
 import kotlinx.datetime.LocalDate
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -60,7 +63,7 @@ import kotlinx.datetime.LocalDate
 fun TaskListScreen(
     onOpenTask: (Int) -> Unit,
     onAddTask: () -> Unit,
-    viewModel: TaskListViewModel = viewModel(factory = TaskListViewModel.Factory),
+    viewModel: TaskListViewModel = viewModel(factory = TaskListViewModelFactory),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     var sortMenuOpen by remember { mutableStateOf(false) }

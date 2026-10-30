@@ -34,15 +34,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.tasks.android.ui.components.TaskEditorViewModelFactory
 import com.example.tasks.shared.domain.DateFormatting
 import com.example.tasks.shared.domain.Priority
+import com.example.tasks.shared.presentation.TaskEditorViewModel
 import kotlinx.datetime.LocalDate
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TaskEditorScreen(
     onDismiss: () -> Unit,
-    viewModel: TaskEditorViewModel = viewModel(factory = TaskEditorViewModel.Factory),
+    viewModel: TaskEditorViewModel = viewModel(factory = TaskEditorViewModelFactory),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     var showDatePicker by remember { mutableStateOf(false) }

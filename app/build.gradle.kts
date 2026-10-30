@@ -46,8 +46,9 @@ android {
 }
 
 dependencies {
-    // KMP shared module: domain (Task, TaskValidator, TaskFilter, StatsCalculator, ...) and
-    // data (TaskApi/KtorTaskApi, TaskRepository, LoadState). Ktor + the OkHttp engine come
+    // KMP shared module: domain (Task, TaskValidator, TaskFilter, StatsCalculator, ...),
+    // data (TaskApi/KtorTaskApi, TaskRepository, LoadState) and presentation (the four ViewModels +
+    // UiState types; shared exposes androidx.lifecycle:lifecycle-viewmodel as `api`). Ktor + the OkHttp engine come
     // transitively from shared's androidMain, so they are not declared here.
     // No version: the composite build (includeBuild("../shared") in settings.gradle.kts)
     // substitutes these coordinates with the local project. kotlinx-datetime comes

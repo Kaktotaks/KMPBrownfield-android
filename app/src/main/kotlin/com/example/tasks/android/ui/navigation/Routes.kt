@@ -1,5 +1,6 @@
 package com.example.tasks.android.ui.navigation
 
+import com.example.tasks.shared.presentation.TaskEditorViewModel
 import kotlinx.serialization.Serializable
 
 // Type-safe Navigation Compose routes.
@@ -22,7 +23,8 @@ data class TaskDetailRoute(val taskId: Int)
 @Serializable
 data class TaskEditorRoute(val taskId: Int = NEW_TASK_ID) {
     companion object {
-        const val NEW_TASK_ID = -1
+        /** Forwarded from the shared VM so the route and the ViewModel agree on the sentinel. */
+        const val NEW_TASK_ID = TaskEditorViewModel.NEW_TASK_ID
     }
 }
 
