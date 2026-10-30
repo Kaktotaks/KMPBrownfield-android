@@ -3,10 +3,10 @@
 Native Android twin of the iOS Tasks app, built from `../SPEC.md`. Brownfield KMP migration,
 step 4: the **domain**, **data** and **presentation** (ViewModels + UiState) layers now come from the
 Kotlin Multiplatform library in `../shared` (see "Shared (KMP) integration" below). The app itself is
-only UI (Compose screens), navigation and DI (`AppContainer` + ViewModel factories).
+only UI (stateless Compose screens + their UI models), navigation and DI (`AppContainer` + ViewModel factories).
 
 ## Stack
-- AGP 9.1.1 (built-in Kotlin), Kotlin 2.4.21, Gradle 9.5.1, compileSdk/targetSdk 37, minSdk 26
+- AGP 9.4.1 (built-in Kotlin), Kotlin 2.4.21, Gradle 9.6.0, compileSdk/targetSdk 37, minSdk 26
 - Jetpack Compose (BOM 2026.09.00, Material 3), Navigation Compose 2.10.2 (type-safe `@Serializable` routes)
 - androidx Lifecycle 2.11.0 (`ViewModel` + `StateFlow`, `viewModelFactory { initializer { } }`)
 - kotlinx.coroutines 1.11.0; kotlinx.serialization 1.12.0 (only for navigation routes now)
@@ -16,11 +16,13 @@ only UI (Compose screens), navigation and DI (`AppContainer` + ViewModel factori
 
 ## Structure (`app/src/main/kotlin/com/example/tasks/android/`)
 ```
-ui/tasklist      TaskListScreen
-ui/taskdetail    TaskDetailScreen
-ui/taskeditor    TaskEditorScreen (full-screen dialog destination ~ iOS sheet)
-ui/stats         StatsScreen
-ui/components    PriorityBadge, load/error/empty states, ViewModelFactories (Android-only DI for shared VMs)
+ui/tasklist      TaskListScreenRoute, TaskListScreen, TaskListUiModel (+ TaskRowUi)
+ui/taskdetail    TaskDetailScreenRoute, TaskDetailScreen, TaskDetailUiModel
+ui/taskeditor    TaskEditorScreenRoute, TaskEditorScreen, TaskEditorUiModel (+ DatePicker millis <-> LocalDate)
+                 (full-screen dialog destination ~ iOS sheet)
+ui/stats         StatsScreenRoute, StatsScreen, StatsUiModel (+ StatRowUi)
+ui/components    PriorityBadge + PriorityUi (Priority.badgeColor), SelectableOption, load/error/empty states,
+                 ViewModelFactories (Android-only DI for shared VMs)
 ui/navigation    Routes + TasksRoot (Scaffold + NavigationBar + NavHost)
 ui/theme         Material 3 theme + semantic colors
 MainActivity.kt, TasksApplication.kt
@@ -32,7 +34,42 @@ Domain classes (`Task`, `Priority`, `TaskValidator`, `ValidationError`, `TaskFil
 (`TaskListViewModel`, `TaskDetailViewModel`, `TaskEditorViewModel`, `StatsViewModel`) and their UiState
 types from `com.example.tasks.shared.presentation`.
 
-Unit tests: the app has none left — domain and repository tests live in `../shared/src/commonTest`.
+## UI layering: screens are UI-only
+Each screen is split into three app-side pieces on top of the shared ViewModel (the Compose
+"stateful route + stateless screen" idiom; the iOS app uses the same split with a Swift screen model):
+
+```
+TaskListScreen        stateless Compose UI: layout only                       (ui/tasklist/TaskListScreen.kt)
+      ^  TaskListUiModel + event lambdas
+TaskListUiModel       pure Kotlin mapping, no Compose: formatting, labels,    (ui/tasklist/TaskListUiModel.kt)
+      ^  TaskListUiState.toUiModel()   selected options, Loading/Error/Empty/Loaded
+TaskListScreenRoute   stateful: viewModel(factory = …), collectAsStateWithLifecycle(),
+      ^               remember(state) { state.toUiModel() }, wires viewModel::onX into the lambdas
+TaskListViewModel     shared (../shared, commonMain): business/presentation logic + UiState
+```
+
+- **Screen** (`…Screen.kt`): receives only the UI model and lambdas. No ViewModel, no repository, no
+  `DateFormatting`/`LocalDate`, no `when` over domain/UiState types, no string building. Sub-areas are small
+  private composables taking UI data (`TaskRow(row: TaskRowUi)`, `SortMenu`, `StatusFilterRow`,
+  `DeleteConfirmationDialog`, `DueDatePickerDialog`, `StatRow`). Purely visual local state stays here
+  (sort menu open, delete confirmation, date picker visible). Every screen has `@Preview`s built from sample
+  UI models — possible precisely because the screen does not need a ViewModel.
+- **UI model** (`…UiModel.kt`): `data class`/`sealed interface` with everything already formatted
+  (`"Due 29 Oct 2026"`, `isOverdue`, `"Done"`/`"Active"`, `"Mark as done"`, `"No notes"`, `"75%"`,
+  error messages, `SelectableOption(value, label, isSelected)` for segmented buttons / sort menu) and a pure
+  `UiState.toUiModel()` mapper. The editor file also holds the DatePicker conversion
+  (`LocalDate.toUtcMillis()` / `utcMillisToLocalDate()`). Unit-tested on the JVM (`app/src/test`).
+- **Route** (`…ScreenRoute.kt`): the only composable that touches the shared ViewModel. Also translates UI
+  events back into domain calls: DatePicker millis -> `LocalDate`, "Save" -> `if (viewModel.save()) onDismiss()`,
+  "Delete" -> `viewModel.onDelete()` + pop back, "Edit" -> `onEdit(viewModel.taskId)`. `TasksRoot` hosts the
+  routes. (Named `…ScreenRoute` because `TaskListRoute`, `TaskDetailRoute`, … are the navigation destinations.)
+- **Shared ViewModel**: unchanged; filtering, sorting, validation, stats and repository access stay in `shared`.
+- `Priority.badgeColor()` (`ui/components/PriorityUi.kt`) is the one tiny presentation helper that needs
+  Compose's `Color`; `PriorityBadge` only lays it out.
+
+Unit tests: `app/src/test` has JVM tests for the UI-model mappers (`TaskListUiModelTest`,
+`TaskDetailUiModelTest`, `TaskEditorUiModelTest`, `StatsUiModelTest`); domain, repository and ViewModel tests
+live in `../shared/src/commonTest`.
 
 ## Open & run
 1. Make sure `shared/` sits next to `android-app/` (`../shared`), then Android Studio → **Open** →
@@ -43,7 +80,8 @@ The app loads 20 todos from `https://jsonplaceholder.typicode.com/todos?_limit=2
 all changes (add / edit / toggle / delete) live in memory only.
 
 ## Tests
-All unit tests are in the shared module (run them from `../shared`, e.g. `./gradlew allTests`).
+- App: UI-model mapper tests — `./gradlew :app:testDebugUnitTest` (JUnit 4, plain JVM).
+- Shared: domain / data / ViewModel tests — from `../shared`, e.g. `./gradlew allTests`.
 
 ## Shared (KMP) integration
 The domain and data layers live in the standalone Gradle build `../shared` (Kotlin Multiplatform: Android +
@@ -78,7 +116,8 @@ iOS). The app consumes it through a **Gradle composite build**:
     `TaskListViewModelFactory`, `TaskDetailViewModelFactory`, `TaskEditorViewModelFactory`,
     `StatsViewModelFactory` (`viewModelFactory { initializer { ... } }`). They take dependencies from
     `AppContainer` and decode the route with `createSavedStateHandle().toRoute<TaskDetailRoute>().taskId`.
-    Screens: `viewModel(factory = TaskListViewModelFactory)` + `collectAsStateWithLifecycle()` (unchanged).
+    The `…ScreenRoute` composables call `viewModel(factory = TaskListViewModelFactory)` +
+    `collectAsStateWithLifecycle()` (see "UI layering" above).
   - Deleted: `ui/*/…ViewModel.kt` (4 files, incl. their UiState types) and `ui/components/AppViewModelFactory.kt`
     (its `CreationExtras.appContainer()` helper moved into `ViewModelFactories.kt`).
   - On iOS the same classes are used without a `ViewModelStoreOwner`, so the Swift side must call

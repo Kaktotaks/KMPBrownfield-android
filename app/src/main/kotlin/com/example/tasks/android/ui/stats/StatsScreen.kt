@@ -16,40 +16,32 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.tasks.android.ui.components.ErrorContent
 import com.example.tasks.android.ui.components.LoadingContent
-import com.example.tasks.android.ui.components.StatsViewModelFactory
-import com.example.tasks.shared.domain.TaskStats
-import com.example.tasks.shared.presentation.StatsUiState
-import com.example.tasks.shared.presentation.StatsViewModel
+import com.example.tasks.android.ui.theme.TasksTheme
 
+/** Stateless Stats tab: layout only. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun StatsScreen(
-    viewModel: StatsViewModel = viewModel(factory = StatsViewModelFactory),
-) {
-    val state by viewModel.uiState.collectAsStateWithLifecycle()
-
+fun StatsScreen(model: StatsUiModel, onRetry: () -> Unit) {
     Scaffold(topBar = { TopAppBar(title = { Text("Stats") }) }) { padding ->
         val contentModifier = Modifier
             .fillMaxSize()
             .padding(padding)
-        when (val s = state) {
-            StatsUiState.Loading -> LoadingContent(contentModifier)
-            StatsUiState.Error -> ErrorContent(onRetry = viewModel::onRetry, modifier = contentModifier)
-            is StatsUiState.Loaded -> StatsContent(s.stats, contentModifier)
+        when (model) {
+            StatsUiModel.Loading -> LoadingContent(contentModifier)
+            StatsUiModel.Error -> ErrorContent(onRetry = onRetry, modifier = contentModifier)
+            is StatsUiModel.Loaded -> StatsContent(model, contentModifier)
         }
     }
 }
 
 @Composable
-private fun StatsContent(stats: TaskStats, modifier: Modifier = Modifier) {
+private fun StatsContent(model: StatsUiModel.Loaded, modifier: Modifier = Modifier) {
     Column(
         modifier = modifier
             .verticalScroll(rememberScrollState())
@@ -58,31 +50,57 @@ private fun StatsContent(stats: TaskStats, modifier: Modifier = Modifier) {
     ) {
         Text("Completed", style = MaterialTheme.typography.titleMedium)
         Text(
-            "${stats.completionPercent}%",
+            model.completionText,
             style = MaterialTheme.typography.displayMedium,
             fontWeight = FontWeight.Bold,
         )
         LinearProgressIndicator(
-            progress = { stats.completionPercent / 100f },
+            progress = { model.progress },
             modifier = Modifier.fillMaxWidth(),
         )
         HorizontalDivider(Modifier.padding(vertical = 8.dp))
-        StatRow("Total", stats.total)
-        StatRow("Done", stats.done)
-        StatRow("Active", stats.active)
-        StatRow("Overdue", stats.overdue)
+        model.summaryRows.forEach { StatRow(it) }
         HorizontalDivider(Modifier.padding(vertical = 8.dp))
         Text("By priority", style = MaterialTheme.typography.titleMedium)
-        StatRow("High", stats.high)
-        StatRow("Medium", stats.medium)
-        StatRow("Low", stats.low)
+        model.priorityRows.forEach { StatRow(it) }
     }
 }
 
 @Composable
-private fun StatRow(label: String, value: Int) {
+private fun StatRow(row: StatRowUi) {
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-        Text(label, style = MaterialTheme.typography.bodyLarge)
-        Text(value.toString(), style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(row.label, style = MaterialTheme.typography.bodyLarge)
+        Text(row.value, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
+
+// region Previews
+
+@Preview(showBackground = true)
+@Composable
+private fun StatsScreenPreview() {
+    TasksTheme {
+        StatsScreen(
+            model = StatsUiModel.Loaded(
+                completionText = "40%",
+                progress = 0.4f,
+                summaryRows = listOf(
+                    StatRowUi("Total", "20"), StatRowUi("Done", "8"),
+                    StatRowUi("Active", "12"), StatRowUi("Overdue", "3"),
+                ),
+                priorityRows = listOf(StatRowUi("High", "5"), StatRowUi("Medium", "9"), StatRowUi("Low", "6")),
+            ),
+            onRetry = {},
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun StatsScreenErrorPreview() {
+    TasksTheme {
+        StatsScreen(model = StatsUiModel.Error, onRetry = {})
+    }
+}
+
+// endregion

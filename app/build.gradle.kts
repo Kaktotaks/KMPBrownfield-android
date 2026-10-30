@@ -73,4 +73,7 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android)
     // Runtime for the @Serializable navigation routes (not for networking anymore).
     implementation(libs.kotlinx.serialization.json)
+
+    // JVM unit tests for the pure UI-model mappers (ui/*/…UiModel.kt): no Android/Compose runtime needed.
+    testImplementation(libs.junit)
 }

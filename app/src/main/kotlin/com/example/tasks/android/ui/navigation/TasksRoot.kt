@@ -25,10 +25,10 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.dialog
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
-import com.example.tasks.android.ui.stats.StatsScreen
-import com.example.tasks.android.ui.taskdetail.TaskDetailScreen
-import com.example.tasks.android.ui.taskeditor.TaskEditorScreen
-import com.example.tasks.android.ui.tasklist.TaskListScreen
+import com.example.tasks.android.ui.stats.StatsScreenRoute
+import com.example.tasks.android.ui.taskdetail.TaskDetailScreenRoute
+import com.example.tasks.android.ui.taskeditor.TaskEditorScreenRoute
+import com.example.tasks.android.ui.tasklist.TaskListScreenRoute
 import kotlin.reflect.KClass
 
 private data class Tab(
@@ -75,6 +75,7 @@ fun TasksRoot() {
             }
         },
     ) { innerPadding ->
+        // Destinations host the stateful *ScreenRoute composables (shared VM -> UI model -> stateless Screen).
         NavHost(
             navController = navController,
             startDestination = TasksGraph,
@@ -84,13 +85,13 @@ fun TasksRoot() {
         ) {
             navigation<TasksGraph>(startDestination = TaskListRoute) {
                 composable<TaskListRoute> {
-                    TaskListScreen(
+                    TaskListScreenRoute(
                         onOpenTask = { id -> navController.navigate(TaskDetailRoute(id)) },
-                        onAddTask = { navController.navigate(TaskEditorRoute()) },
+                        onNewTask = { navController.navigate(TaskEditorRoute()) },
                     )
                 }
                 composable<TaskDetailRoute> {
-                    TaskDetailScreen(
+                    TaskDetailScreenRoute(
                         onBack = { navController.popBackStack() },
                         onEdit = { id -> navController.navigate(TaskEditorRoute(id)) },
                     )
@@ -100,12 +101,12 @@ fun TasksRoot() {
                 dialog<TaskEditorRoute>(
                     dialogProperties = DialogProperties(usePlatformDefaultWidth = false),
                 ) {
-                    TaskEditorScreen(onDismiss = { navController.popBackStack() })
+                    TaskEditorScreenRoute(onDismiss = { navController.popBackStack() })
                 }
             }
             navigation<StatsGraph>(startDestination = StatsRoute) {
                 composable<StatsRoute> {
-                    StatsScreen()
+                    StatsScreenRoute()
                 }
             }
         }

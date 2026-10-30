@@ -7,21 +7,14 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.example.tasks.android.ui.theme.TaskColors
 import com.example.tasks.shared.domain.Priority
 
-fun Priority.color(): Color = when (this) {
-    Priority.LOW -> TaskColors.Low
-    Priority.MEDIUM -> TaskColors.Medium
-    Priority.HIGH -> TaskColors.High
-}
-
+/** Layout only: label and color come from [Priority.displayName] and [Priority.badgeColor]. */
 @Composable
 fun PriorityBadge(priority: Priority, modifier: Modifier = Modifier) {
-    val color = priority.color()
+    val color = priority.badgeColor()
     Text(
         text = priority.displayName,
         color = color,
