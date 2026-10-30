@@ -4,6 +4,8 @@ plugins {
     // AGP 9 has built-in Kotlin support: no separate org.jetbrains.kotlin.android plugin.
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.composeCompiler)
+    // Serialization stays for type-safe Navigation routes (@Serializable in ui/navigation/Routes.kt).
+    // JSON/networking (TodoDto, Ktor) now live in the shared module.
     alias(libs.plugins.kotlinSerialization)
 }
 
@@ -44,7 +46,9 @@ android {
 }
 
 dependencies {
-    // KMP shared module (domain: Task, TaskValidator, TaskFilter, StatsCalculator, ...).
+    // KMP shared module: domain (Task, TaskValidator, TaskFilter, StatsCalculator, ...) and
+    // data (TaskApi/KtorTaskApi, TaskRepository, LoadState). Ktor + the OkHttp engine come
+    // transitively from shared's androidMain, so they are not declared here.
     // No version: the composite build (includeBuild("../shared") in settings.gradle.kts)
     // substitutes these coordinates with the local project. kotlinx-datetime comes
     // transitively (shared exposes it as `api`), so it is not declared here.
@@ -66,8 +70,6 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
 
     implementation(libs.kotlinx.coroutines.android)
+    // Runtime for the @Serializable navigation routes (not for networking anymore).
     implementation(libs.kotlinx.serialization.json)
-
-    testImplementation(libs.junit)
-    testImplementation(libs.kotlinx.coroutines.test)
 }

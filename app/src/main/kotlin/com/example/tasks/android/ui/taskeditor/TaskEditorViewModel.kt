@@ -7,7 +7,7 @@ import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.navigation.toRoute
-import com.example.tasks.android.data.TaskRepository
+import com.example.tasks.shared.data.TaskRepository
 import com.example.tasks.android.ui.components.appContainer
 import com.example.tasks.android.ui.navigation.TaskEditorRoute
 import com.example.tasks.shared.domain.DateProvider
