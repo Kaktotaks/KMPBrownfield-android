@@ -11,7 +11,7 @@ only UI (stateless Compose screens + their UI models), navigation and DI (`AppCo
 - androidx Lifecycle 2.11.0 (`ViewModel` + `StateFlow`, `viewModelFactory { initializer { } }`)
 - kotlinx.coroutines 1.11.0; kotlinx.serialization 1.12.0 (only for navigation routes now)
 - Manual DI: `AppContainer` in `TasksApplication` (one `TaskApi`, one `TaskRepository`, one `DateProvider`)
-- `shared` KMP library (composite build): domain + data (Ktor client, OkHttp engine on Android),
+- `shared` KMP library (GitHub Packages, `0.5.0`; composite build via `-PuseLocalShared=true`): domain + data (Ktor client, OkHttp engine on Android),
   kotlinx-datetime 0.8.0 (transitive, `LocalDate`)
 
 ## Structure (`app/src/main/kotlin/com/example/tasks/android/`)
@@ -85,21 +85,26 @@ all changes (add / edit / toggle / delete) live in memory only.
 
 ## Shared (KMP) integration
 The domain and data layers live in the standalone Gradle build `../shared` (Kotlin Multiplatform: Android +
-iOS). The app consumes it through a **Gradle composite build**:
+iOS). The app consumes it as a **versioned Maven artifact** (step 6), with a composite build as a local-dev switch:
 
-- `settings.gradle.kts`: `includeBuild("../shared")`. The folder layout is therefore fixed:
+- Default: `implementation(libs.shared)` → `com.example.tasks:shared:0.5.0` (`gradle/libs.versions.toml`)
+  from **GitHub Packages**. Gradle reads the Gradle module metadata of the KMP publication and picks the
+  Android variant (`shared-android`). Kotlin/Native and the iOS part are not built at all.
+- GitHub Packages needs a token even for public packages — `~/.gradle/gradle.properties`:
+  ```properties
+  GitHubPackagesUsername=<github-login>
+  GitHubPackagesPassword=<classic PAT with read:packages>
+  ```
+- Updating shared = bump `shared` in `libs.versions.toml` in its own PR.
+- Local development: `./gradlew … -PuseLocalShared=true` (or `useLocalShared=true` in
+  `~/.gradle/gradle.properties`). `settings.gradle.kts` then does `includeBuild("../shared")`, which
+  substitutes `com.example.tasks:shared` (any version) with the `../shared` sources:
   ```
   KMPBrownfield/
     android-app/   <- this project
     shared/        <- KMP library (group "com.example.tasks", rootProject.name "shared")
     ios-app/
   ```
-- `app/build.gradle.kts`: `implementation("com.example.tasks:shared")` — no version.
-- Substitution: the included build publishes the coordinates `group:rootProject.name`
-  = `com.example.tasks:shared`. Gradle sees that the included build produces exactly this module and
-  replaces the external dependency with the local project, so `:app` compiles against the current
-  `shared` sources (Android variant of the `com.android.kotlin.multiplatform.library` target). Changes in
-  `../shared` are picked up on the next build — no publishing, no `mavenLocal()`.
 - `kotlinx-datetime` is an `api` dependency of `shared` (`Task.dueDate` is a `LocalDate`), so the
   app gets it transitively and does not declare it.
 - Step 4 — ViewModels from `shared` (`com.example.tasks.shared.presentation`):
@@ -141,8 +146,7 @@ iOS). The app consumes it through a **Gradle composite build**:
 - Step 1 — what changed in the app: `domain/` was deleted; `Clock`/`SystemClock` → `DateProvider` /
   `SystemDateProvider`; `java.time.LocalDate` → `kotlinx.datetime.LocalDate` (DatePicker UTC millis
   ↔ `LocalDate` via epoch days); `TodoDto.toTask` → `TodoMapper.map(id, title, completed, today)`.
-- Later: when `shared` is published to a Maven repository, remove the `includeBuild` line and add a
-  version: `implementation("com.example.tasks:shared:0.1.0")`.
+- Step 6: `includeBuild` → versioned dependency from GitHub Packages (composite build kept behind `useLocalShared`).
 
 ## KMP notes
 - Done (step 1): `domain/` → `../shared` (`commonMain`), `java.time` → `kotlinx-datetime`.

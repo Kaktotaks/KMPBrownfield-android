@@ -50,10 +50,10 @@ dependencies {
     // data (TaskApi/KtorTaskApi, TaskRepository, LoadState) and presentation (the four ViewModels +
     // UiState types; shared exposes androidx.lifecycle:lifecycle-viewmodel as `api`). Ktor + the OkHttp engine come
     // transitively from shared's androidMain, so they are not declared here.
-    // No version: the composite build (includeBuild("../shared") in settings.gradle.kts)
-    // substitutes these coordinates with the local project. kotlinx-datetime comes
-    // transitively (shared exposes it as `api`), so it is not declared here.
-    implementation("com.example.tasks:shared")
+    // Versioned artifact from GitHub Packages (libs.versions.toml → shared). With
+    // -PuseLocalShared=true the composite build substitutes it with ../shared sources.
+    // kotlinx-datetime comes transitively (shared exposes it as `api`).
+    implementation(libs.shared)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)
