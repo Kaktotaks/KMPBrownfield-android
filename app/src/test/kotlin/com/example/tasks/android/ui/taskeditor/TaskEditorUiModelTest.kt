@@ -6,6 +6,7 @@ import com.example.tasks.shared.presentation.TaskEditorUiState
 import kotlinx.datetime.LocalDate
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -36,14 +37,23 @@ class TaskEditorUiModelTest {
     }
 
     @Test
-    fun errorsBecomeMessagesAndBlockSave() {
+    fun errorsMapToTheirFieldAndBlockSave() {
         val model = state(errors = listOf(ValidationError.TITLE_TOO_SHORT, ValidationError.DUE_DATE_IN_PAST)).toUiModel()
 
-        assertEquals(
-            listOf("Title must be at least 3 characters.", "Due date can't be in the past."),
-            model.errorMessages,
-        )
+        assertEquals("Title must be at least 3 characters.", model.titleError)
+        assertEquals("Due date can't be in the past.", model.dueDateError)
+        assertNull(model.notesError)
+        assertEquals(2, model.errorFieldCount)
         assertFalse(model.canSave)
+    }
+
+    @Test
+    fun notesErrorBelongsToTheNotesField() {
+        val model = state(errors = listOf(ValidationError.NOTES_TOO_LONG)).toUiModel()
+
+        assertEquals("Notes must be at most 500 characters.", model.notesError)
+        assertNull(model.titleError)
+        assertEquals(1, model.errorFieldCount)
     }
 
     @Test
@@ -59,6 +69,6 @@ class TaskEditorUiModelTest {
         assertEquals(listOf("Low", "Medium", "High"), model.priorityOptions.map { it.label })
         assertEquals(listOf(Priority.HIGH), model.priorityOptions.filter { it.isSelected }.map { it.value })
         assertTrue(model.canSave)
-        assertTrue(model.errorMessages.isEmpty())
+        assertEquals(0, model.errorFieldCount)
     }
 }

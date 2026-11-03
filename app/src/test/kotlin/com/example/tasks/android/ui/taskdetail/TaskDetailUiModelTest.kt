@@ -5,6 +5,7 @@ import com.example.tasks.shared.domain.Task
 import com.example.tasks.shared.presentation.TaskDetailUiState
 import kotlinx.datetime.LocalDate
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Test
 
 class TaskDetailUiModelTest {
@@ -17,22 +18,26 @@ class TaskDetailUiModelTest {
     }
 
     @Test
-    fun activeOverdueTaskWithoutNotes() {
+    fun activeOverdueTaskWithoutNotesHidesTheNotesCard() {
         val task = Task(7, "Pay rent", "", Priority.LOW, LocalDate(2026, 10, 1), isDone = false)
 
         assertEquals(
             TaskDetailUiModel.Loaded(
                 title = "Pay rent",
-                statusText = "Active",
+                isDone = false,
                 priority = Priority.LOW,
-                dueText = "Due 1 Oct 2026",
+                dueDate = "1 Oct 2026",
                 isOverdue = true,
-                notesText = "No notes",
-                hasNotes = false,
-                toggleButtonText = "Mark as done",
+                notes = null,
             ),
             TaskDetailUiState(task, today).toUiModel(),
         )
+    }
+
+    @Test
+    fun blankNotesCountAsNoNotes() {
+        val task = Task(7, "Pay rent", "  \n ", Priority.LOW, LocalDate(2026, 10, 1), isDone = false)
+        assertNull((TaskDetailUiState(task, today).toUiModel() as TaskDetailUiModel.Loaded).notes)
     }
 
     @Test
@@ -40,10 +45,8 @@ class TaskDetailUiModelTest {
         val task = Task(7, "Pay rent", "Bank transfer", Priority.LOW, LocalDate(2026, 10, 1), isDone = true)
         val model = TaskDetailUiState(task, today).toUiModel() as TaskDetailUiModel.Loaded
 
-        assertEquals("Done", model.statusText)
+        assertEquals(true, model.isDone)
         assertEquals(false, model.isOverdue)
-        assertEquals("Bank transfer", model.notesText)
-        assertEquals(true, model.hasNotes)
-        assertEquals("Mark as active", model.toggleButtonText)
+        assertEquals("Bank transfer", model.notes)
     }
 }
