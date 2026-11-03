@@ -1,43 +1,54 @@
 package com.example.tasks.android.ui.taskeditor
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.foundation.background
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.tasks.android.R
+import com.example.tasks.android.ui.components.DateField
+import com.example.tasks.android.ui.components.ErrorBanner
+import com.example.tasks.android.ui.components.PillSegmentedControl
+import com.example.tasks.android.ui.components.SavePill
 import com.example.tasks.android.ui.components.SelectableOption
+import com.example.tasks.android.ui.components.TasksTextField
+import com.example.tasks.android.ui.components.TasksVisibility
+import com.example.tasks.android.ui.components.priorityBar
 import com.example.tasks.android.ui.theme.TasksTheme
+import com.example.tasks.android.ui.theme.TasksType
 import com.example.tasks.shared.domain.Priority
 
-/** Stateless New/Edit task form: layout only. Dates cross this boundary as DatePicker millis. */
+/**
+ * Stateless editor content (§3.3): header (Cancel / title / SavePill) + scrolling body.
+ * Hosted by [TaskEditorSheet]'s `ModalBottomSheet`; the field order is the focus order.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TaskEditorScreen(
@@ -49,134 +60,145 @@ fun TaskEditorScreen(
     onSave: () -> Unit,
     onCancel: () -> Unit,
 ) {
-    // Purely visual state: whether the date picker dialog is shown.
+    val colors = TasksTheme.colors
+    // Purely visual state: the system date picker.
     var showDatePicker by remember { mutableStateOf(false) }
 
-    Scaffold(
-        modifier = Modifier.fillMaxSize(),
-        topBar = {
-            TopAppBar(
-                title = { Text(model.screenTitle) },
-                navigationIcon = {
-                    TextButton(onClick = onCancel) { Text("Cancel") }
-                },
-                actions = {
-                    TextButton(onClick = onSave, enabled = model.canSave) { Text("Save") }
-                },
+    Column(Modifier.fillMaxWidth().imePadding().navigationBarsPadding()) {
+        // Header: 3-column grid.
+        Box(Modifier.fillMaxWidth().heightIn(min = 48.dp).padding(horizontal = 16.dp)) {
+            Text(
+                stringResource(R.string.cancel),
+                style = TasksType.bodyMedium,
+                color = colors.textPrimary,
+                modifier = Modifier
+                    .align(Alignment.CenterStart)
+                    .heightIn(min = 48.dp)
+                    .clickable(role = Role.Button, onClick = onCancel)
+                    .padding(vertical = 12.dp),
             )
-        },
-    ) { padding ->
+            Text(model.screenTitle, style = TasksType.sheetTitle, color = colors.textPrimary, modifier = Modifier.align(Alignment.Center))
+            SavePill(
+                text = stringResource(R.string.save),
+                onClick = onSave,
+                enabled = model.canSave,
+                modifier = Modifier.align(Alignment.CenterEnd),
+            )
+        }
+
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .imePadding()
+            Modifier
                 .verticalScroll(rememberScrollState())
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+                .padding(start = 16.dp, end = 16.dp, top = 14.dp, bottom = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(18.dp),
         ) {
-            OutlinedTextField(
+            AnimatedVisibility(model.errorFieldCount > 0, enter = TasksVisibility.enter, exit = TasksVisibility.exit) {
+                ErrorBanner(pluralStringResource(R.plurals.fix_fields, model.errorFieldCount, model.errorFieldCount))
+            }
+            TasksTextField(
+                label = stringResource(R.string.title_label),
                 value = model.title,
                 onValueChange = onTitleChange,
-                label = { Text("Title") },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth(),
+                placeholder = stringResource(R.string.title_placeholder),
+                error = model.titleError,
             )
-            OutlinedTextField(
+            TasksTextField(
+                label = stringResource(R.string.notes),
                 value = model.notes,
                 onValueChange = onNotesChange,
-                label = { Text("Notes") },
                 minLines = 3,
-                modifier = Modifier.fillMaxWidth(),
+                error = model.notesError,
             )
-
-            Text("Priority", style = MaterialTheme.typography.labelLarge)
-            PrioritySelector(options = model.priorityOptions, onSelect = onPriorityChange)
-
-            Text("Due date", style = MaterialTheme.typography.labelLarge)
-            OutlinedButton(onClick = { showDatePicker = true }, modifier = Modifier.fillMaxWidth()) {
-                Icon(Icons.Filled.DateRange, contentDescription = null)
-                Text(model.dueDateText, modifier = Modifier.padding(start = 8.dp))
+            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text(stringResource(R.string.priority).uppercase(), style = TasksType.overline, color = colors.textSecondary)
+                PillSegmentedControl(
+                    options = model.priorityOptions,
+                    onSelect = onPriorityChange,
+                    segmentHeight = 36.dp,
+                    dotColor = { colors.priorityBar(it) },
+                )
             }
-
-            ValidationErrors(model.errorMessages)
+            DateField(
+                label = stringResource(R.string.due_date),
+                valueText = model.dueDateText,
+                onClick = { showDatePicker = true },
+                error = model.dueDateError,
+            )
         }
     }
 
     if (showDatePicker) {
-        DueDatePickerDialog(
-            initialMillis = model.dueDateMillis,
-            onConfirm = { millis ->
-                millis?.let(onDueDateSelected)
-                showDatePicker = false
-            },
-            onDismiss = { showDatePicker = false },
+        val pickerState = rememberDatePickerState(initialSelectedDateMillis = model.dueDateMillis)
+        // Lime is fill-only (§1.1): selected day = accent container, "today" and buttons use textPrimary.
+        val pickerColors = DatePickerDefaults.colors(
+            containerColor = colors.surface,
+            selectedDayContainerColor = colors.accent,
+            selectedDayContentColor = colors.onAccent,
+            todayContentColor = colors.textPrimary,
+            todayDateBorderColor = colors.textPrimary,
+            selectedYearContainerColor = colors.accent,
+            selectedYearContentColor = colors.onAccent,
+            currentYearContentColor = colors.textPrimary,
+            navigationContentColor = colors.textPrimary,
+            dividerColor = colors.border,
         )
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun PrioritySelector(options: List<SelectableOption<Priority>>, onSelect: (Priority) -> Unit) {
-    SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
-        options.forEachIndexed { index, option ->
-            SegmentedButton(
-                selected = option.isSelected,
-                onClick = { onSelect(option.value) },
-                shape = SegmentedButtonDefaults.itemShape(index = index, count = options.size),
-                label = { Text(option.label) },
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            colors = pickerColors,
+            confirmButton = {
+                TextButton(onClick = {
+                    pickerState.selectedDateMillis?.let(onDueDateSelected)
+                    showDatePicker = false
+                }) { Text(stringResource(R.string.save), style = TasksType.button, color = colors.textPrimary) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) {
+                    Text(stringResource(R.string.cancel), style = TasksType.button, color = colors.textPrimary)
+                }
+            },
+        ) {
+            DatePicker(
+                state = pickerState,
+                colors = pickerColors,
             )
         }
-    }
-}
-
-/** Validation errors, live, in red under the form. */
-@Composable
-private fun ValidationErrors(messages: List<String>) {
-    messages.forEach { message ->
-        Text(message, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodyMedium)
-    }
-}
-
-/** Material3 DatePicker works in UTC millis at start of day; the conversion lives in [TaskEditorUiModel]'s file. */
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun DueDatePickerDialog(initialMillis: Long, onConfirm: (Long?) -> Unit, onDismiss: () -> Unit) {
-    val pickerState = rememberDatePickerState(initialSelectedDateMillis = initialMillis)
-    DatePickerDialog(
-        onDismissRequest = onDismiss,
-        confirmButton = {
-            TextButton(onClick = { onConfirm(pickerState.selectedDateMillis) }) { Text("OK") }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Cancel") }
-        },
-    ) {
-        DatePicker(state = pickerState)
     }
 }
 
 // region Previews
 
-@Preview(showBackground = true)
+private fun previewModel(withErrors: Boolean) = TaskEditorUiModel(
+    screenTitle = "New Task",
+    title = "",
+    notes = "Ask about the express option and bring the old passport.",
+    priorityOptions = Priority.entries.map { SelectableOption(it, it == Priority.HIGH, label = it.displayName) },
+    dueDateText = "2 Nov 2026",
+    dueDateMillis = 0L,
+    titleError = if (withErrors) "Title must be at least 3 characters." else null,
+    notesError = null,
+    dueDateError = if (withErrors) "Due date can't be in the past." else null,
+    canSave = !withErrors,
+)
+
 @Composable
-private fun TaskEditorScreenPreview() {
-    TasksTheme {
-        TaskEditorScreen(
-            model = TaskEditorUiModel(
-                screenTitle = "New Task",
-                title = "Hi",
-                notes = "",
-                priorityOptions = Priority.entries.map { SelectableOption(it, it.displayName, it == Priority.MEDIUM) },
-                dueDateText = "30 Oct 2026",
-                dueDateMillis = 0L,
-                errorMessages = listOf("Title must be at least 3 characters."),
-                canSave = false,
-            ),
-            onTitleChange = {}, onNotesChange = {}, onPriorityChange = {},
-            onDueDateSelected = {}, onSave = {}, onCancel = {},
-        )
+private fun PreviewScreen(model: TaskEditorUiModel, dark: Boolean) {
+    TasksTheme(darkTheme = dark) {
+        Box(Modifier.fillMaxWidth().background(TasksTheme.colors.bg)) {
+            TaskEditorScreen(model, {}, {}, {}, {}, {}, {})
+        }
     }
 }
+
+@Preview(name = "Editor errors light", showBackground = true, heightDp = 800)
+@Composable
+private fun TaskEditorErrorsLightPreview() = PreviewScreen(previewModel(withErrors = true), dark = false)
+
+@Preview(name = "Editor errors dark", showBackground = true, heightDp = 800)
+@Composable
+private fun TaskEditorErrorsDarkPreview() = PreviewScreen(previewModel(withErrors = true), dark = true)
+
+@Preview(name = "Editor valid light", showBackground = true, heightDp = 800)
+@Composable
+private fun TaskEditorValidLightPreview() = PreviewScreen(previewModel(withErrors = false), dark = false)
 
 // endregion

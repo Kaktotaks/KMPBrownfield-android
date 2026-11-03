@@ -57,7 +57,7 @@ fun <T> SortPill(
         DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
             options.forEach { option ->
                 DropdownMenuItem(
-                    text = { Text(option.label, style = TasksType.body, color = colors.textPrimary) },
+                    text = { Text(option.text(), style = TasksType.body, color = colors.textPrimary) },
                     onClick = {
                         onSelect(option.value)
                         open = false

@@ -4,24 +4,20 @@ import com.example.tasks.shared.domain.DateFormatting
 import com.example.tasks.shared.domain.Priority
 import com.example.tasks.shared.presentation.TaskDetailUiState
 
-/** Everything [TaskDetailScreen] draws, already formatted. Plain Kotlin: no Compose, unit-tested on the JVM. */
+/** Everything [TaskDetailScreen] draws, already mapped. Plain Kotlin: no Compose, unit-tested on the JVM. */
 sealed interface TaskDetailUiModel {
-    /** The task is gone (e.g. deleted) — the screen shows the empty state. */
+    /** The task is gone (e.g. deleted) — the screen shows "Task not found". */
     data object NotFound : TaskDetailUiModel
 
     data class Loaded(
         val title: String,
-        /** "Done" / "Active". */
-        val statusText: String,
+        val isDone: Boolean,
         val priority: Priority,
-        /** "Due 29 Oct 2026". */
-        val dueText: String,
+        /** "5 Nov 2026"; the "Due %s" copy is applied by the UI. */
+        val dueDate: String,
         val isOverdue: Boolean,
-        /** The notes, or "No notes" when empty ([hasNotes] == false selects the muted style). */
-        val notesText: String,
-        val hasNotes: Boolean,
-        /** "Mark as active" / "Mark as done". */
-        val toggleButtonText: String,
+        /** The notes, or null when blank (the notes card is hidden then). */
+        val notes: String?,
     ) : TaskDetailUiModel
 }
 
@@ -30,12 +26,10 @@ fun TaskDetailUiState.toUiModel(): TaskDetailUiModel {
     val task = task ?: return TaskDetailUiModel.NotFound
     return TaskDetailUiModel.Loaded(
         title = task.title,
-        statusText = if (task.isDone) "Done" else "Active",
+        isDone = task.isDone,
         priority = task.priority,
-        dueText = "Due ${DateFormatting.format(task.dueDate)}",
+        dueDate = DateFormatting.format(task.dueDate),
         isOverdue = task.isOverdue(today),
-        notesText = task.notes.ifEmpty { "No notes" },
-        hasNotes = task.notes.isNotEmpty(),
-        toggleButtonText = if (task.isDone) "Mark as active" else "Mark as done",
+        notes = task.notes.takeIf { it.isNotBlank() },
     )
 }
