@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Adaptive icon layer: 108dp canvas, art centered inside the 66dp safe zone.
+     Geometry = design 1024 icon scaled by 0.068 around (516,470) -> (54,54). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp"
+    android:viewportWidth="108" android:viewportHeight="108">
+    <!-- outlined card: rect 32.24,44.752 -> 62.16,74.672, r 8.432, stroke 2.72 -->
+    <path android:strokeColor="#FFFFFF" android:strokeWidth="2.72" android:fillColor="#00000000"
+        android:pathData="M40.672,44.752 H53.728 A8.432,8.432 0 0 1 62.16,53.184 V66.24 A8.432,8.432 0 0 1 53.728,74.672 H40.672 A8.432,8.432 0 0 1 32.24,66.24 V53.184 A8.432,8.432 0 0 1 40.672,44.752 Z"/>
+    <!-- done disc: center 59.984,51.28 r 17 -->
+    <path android:fillColor="#E3F140"
+        android:pathData="M42.984,51.28 A17,17 0 1 0 76.984,51.28 A17,17 0 1 0 42.984,51.28 Z"/>
+    <!-- check -->
+    <path android:strokeColor="#0A0A0A" android:strokeWidth="4.488" android:fillColor="#00000000"
+        android:strokeLineCap="round" android:strokeLineJoin="round"
+        android:pathData="M51.96,51.824 l5.984,5.984 l11.016,-12.24"/>
+</vector>
