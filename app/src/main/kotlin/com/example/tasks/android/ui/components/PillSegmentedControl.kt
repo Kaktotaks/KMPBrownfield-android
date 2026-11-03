@@ -97,7 +97,7 @@ fun <T> PillSegmentedControl(
                         Box(Modifier.size(8.dp).background(dotColor(option.value), CircleShape))
                     }
                     Text(
-                        option.label,
+                        option.text(),
                         style = if (option.isSelected) TasksType.bodyStrong else TasksType.bodyMedium,
                         color = textColor,
                     )

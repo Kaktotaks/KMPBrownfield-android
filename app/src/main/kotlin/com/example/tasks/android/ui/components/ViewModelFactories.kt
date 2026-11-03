@@ -10,10 +10,8 @@ import androidx.navigation.toRoute
 import com.example.tasks.android.AppContainer
 import com.example.tasks.android.TasksApplication
 import com.example.tasks.android.ui.navigation.TaskDetailRoute
-import com.example.tasks.android.ui.navigation.TaskEditorRoute
 import com.example.tasks.shared.presentation.StatsViewModel
 import com.example.tasks.shared.presentation.TaskDetailViewModel
-import com.example.tasks.shared.presentation.TaskEditorViewModel
 import com.example.tasks.shared.presentation.TaskListViewModel
 
 // ViewModel logic and UiState types live in `shared` (com.example.tasks.shared.presentation).
@@ -40,19 +38,6 @@ val TaskDetailViewModelFactory: ViewModelProvider.Factory = viewModelFactory {
         TaskDetailViewModel(
             taskId = createSavedStateHandle().toRoute<TaskDetailRoute>().taskId,
             repository = container.taskRepository,
-            dateProvider = container.dateProvider,
-        )
-    }
-}
-
-/** `TaskEditorRoute.NEW_TASK_ID` == `TaskEditorViewModel.NEW_TASK_ID`, so the id is forwarded as is. */
-val TaskEditorViewModelFactory: ViewModelProvider.Factory = viewModelFactory {
-    initializer {
-        val container = appContainer()
-        TaskEditorViewModel(
-            taskId = createSavedStateHandle().toRoute<TaskEditorRoute>().taskId,
-            repository = container.taskRepository,
-            validator = container.taskValidator,
             dateProvider = container.dateProvider,
         )
     }
