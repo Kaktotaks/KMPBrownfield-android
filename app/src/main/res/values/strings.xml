@@ -1,3 +1,69 @@
 <resources>
     <string name="app_name">Tasks</string>
+
+    <!-- Keys follow DESIGN_HANDOFF §6 and are identical on iOS (Localizable.xcstrings). -->
+    <string name="tasks_title">Tasks</string>
+    <string name="stats_title">Stats</string>
+    <string name="search_placeholder">Search tasks</string>
+    <string name="filter_all">All</string>
+    <string name="filter_active">Active</string>
+    <string name="filter_done">Done</string>
+    <string name="sort_due">Due date</string>
+    <string name="sort_priority">Priority</string>
+    <string name="sort_title">Title</string>
+    <string name="due_format">Due %1$s</string>
+    <string name="overdue_suffix">· Overdue</string>
+    <string name="add_task">Add task</string>
+    <string name="empty_title">No tasks yet</string>
+    <string name="empty_body">Tap + to add your first task.</string>
+    <string name="no_match_title">No matching tasks</string>
+    <string name="no_match_body">Try a different search or filter.</string>
+    <string name="error_title">Couldn\'t load tasks</string>
+    <string name="error_body">Check your connection and try again.</string>
+    <string name="retry">Retry</string>
+    <string name="loading">Loading tasks…</string>
+    <string name="notes">Notes</string>
+    <string name="priority">Priority</string>
+    <string name="due_date">Due date</string>
+    <string name="status">Status</string>
+    <string name="status_active">Active</string>
+    <string name="status_done">Done</string>
+    <string name="mark_done">Mark done</string>
+    <string name="mark_active">Mark as active</string>
+    <string name="edit">Edit</string>
+    <string name="delete">Delete</string>
+    <string name="delete_confirm_title">Delete this task?</string>
+    <string name="not_found_title">Task not found</string>
+    <string name="not_found_body">It may have been deleted.</string>
+    <string name="cancel">Cancel</string>
+    <string name="save">Save</string>
+    <string name="title_label">Title</string>
+    <string name="title_placeholder">What needs doing?</string>
+    <plurals name="fix_fields">
+        <item quantity="one">Fix %d field to save this task.</item>
+        <item quantity="other">Fix %d fields to save this task.</item>
+    </plurals>
+    <string name="completion">Completion</string>
+    <string name="n_of_m_done">%1$d of %2$d tasks done</string>
+    <string name="total">Total</string>
+    <string name="done">Done</string>
+    <string name="active">Active</string>
+    <string name="overdue">Overdue</string>
+    <string name="by_priority">By priority</string>
+    <plurals name="n_tasks">
+        <item quantity="one">%d task</item>
+        <item quantity="other">%d tasks</item>
+    </plurals>
+
+    <!-- Not in §6: accessibility and chrome labels (same keys and text on iOS). -->
+    <string name="back">Back</string>
+    <string name="sort_label">Sort</string>
+    <string name="search_clear">Clear search</string>
+    <string name="a11y_priority">%1$s priority</string>
+    <string name="a11y_overdue">overdue</string>
+    <string name="a11y_done">done</string>
+    <string name="a11y_mark_done">Mark %1$s done</string>
+    <string name="a11y_mark_not_done">Mark %1$s not done</string>
+    <string name="a11y_completion_value">%1$d percent, %2$d of %3$d tasks done</string>
+    <string name="a11y_date_field">%1$s, %2$s</string>
 </resources>
