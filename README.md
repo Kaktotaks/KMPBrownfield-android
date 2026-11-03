@@ -12,6 +12,21 @@ How the app got here: [`docs/MIGRATION.md`](docs/MIGRATION.md) (brownfield migra
 The app loads 20 todos from `https://jsonplaceholder.typicode.com/todos?_limit=20` on start;
 afterwards all changes (add / edit / toggle / delete) live in memory only.
 
+## Design
+
+The UI follows the approved redesign — [`docs/design/DESIGN_HANDOFF.md`](docs/design/DESIGN_HANDOFF.md) (tokens, components,
+screens, motion, copy, accessibility, acceptance criteria). It is a visual-layer change only: the shared module and its
+ViewModels are untouched, and both apps look and behave the same except the chrome listed in handoff §0. The sort pill's
+"Title" option comes from `SortOrder.TITLE` (shared 0.6.0).
+
+| List | List (dark) | Stats |
+|---|---|---|
+| ![List](docs/design/screenshots/android-List.png) | ![List dark](docs/design/screenshots/android-List-Dark.png) | ![Stats](docs/design/screenshots/android-Stats.png) |
+
+More states (detail, editor with validation errors, error, empty) are in [`docs/design/screenshots`](docs/design/screenshots)
+next to the iOS counterparts. Screenshots of the two apps differ in data only (the iOS ones use the fake-data preview
+graph, the Android ones the live JSONPlaceholder data).
+
 ## Architecture
 
 ```
@@ -32,6 +47,7 @@ TaskRepository, TaskValidator, TaskFilter, StatsCalculator, …   from shared (d
   `UiState.toUiModel()` mapper, unit-tested on the JVM.
 - **Route** (`…ScreenRoute.kt`): the only composable that touches the shared ViewModel; translates UI
   events into ViewModel calls (e.g. DatePicker millis → `LocalDate`, `if (viewModel.save()) onDismiss()`).
+  The editor is a `ModalBottomSheet` hosted by the list/detail routes (`TaskEditorSheet`), not a navigation destination.
 - **Shared ViewModels** (`com.example.tasks.shared.presentation`) are ordinary androidx ViewModels on
   Android: created by `ViewModelProvider`, scoped to the `NavBackStackEntry`, survive configuration
   changes. `ui/components/ViewModelFactories.kt` is the only Android-specific glue: it takes
@@ -43,11 +59,13 @@ TaskRepository, TaskValidator, TaskFilter, StatsCalculator, …   from shared (d
 app/src/main/kotlin/com/example/tasks/android/
   ui/tasklist      TaskListScreenRoute, TaskListScreen, TaskListUiModel
   ui/taskdetail    TaskDetailScreenRoute, TaskDetailScreen, TaskDetailUiModel
-  ui/taskeditor    TaskEditorScreenRoute, TaskEditorScreen, TaskEditorUiModel (full-screen dialog ~ iOS sheet)
+  ui/taskeditor    TaskEditorSheet (ModalBottomSheet + shared VM), TaskEditorScreen, TaskEditorUiModel
   ui/stats         StatsScreenRoute, StatsScreen, StatsUiModel
-  ui/components    PriorityBadge, PriorityUi, SelectableOption, load/error states, ViewModelFactories
+  ui/components    TaskCard, CheckCircle, badges, buttons, fields, PillSegmentedControl, SortPill, cards, ring,
+                   PriorityBar, EmptyState, Skeleton, TasksIcons (generated, shared with iOS), ViewModelFactories
   ui/navigation    Routes (type-safe @Serializable) + TasksRoot (Scaffold + NavigationBar + NavHost)
-  ui/theme         Material 3 theme + semantic colors
+  ui/theme         TasksColors (+ CompositionLocal), TasksType (Inter), Radius/Spacing, Motion, TasksTheme -> MaterialTheme
+                   (dynamic color off)
   MainActivity.kt, TasksApplication.kt (AppContainer)
 ```
 
@@ -55,7 +73,7 @@ app/src/main/kotlin/com/example/tasks/android/
 AGP 9.4.1 (built-in Kotlin), Kotlin 2.4.21, Gradle 9.6.0, compileSdk/targetSdk 37, minSdk 26 ·
 Jetpack Compose (BOM 2026.09.00, Material 3) · Navigation Compose 2.10.2 · androidx Lifecycle 2.11.0 ·
 kotlinx.coroutines 1.11.0 · kotlinx.serialization 1.12.0 (navigation routes only) ·
-`com.example.tasks:shared:0.5.0` (brings Ktor + OkHttp, kotlinx-datetime and lifecycle-viewmodel
+`com.example.tasks:shared:0.6.0` (brings Ktor + OkHttp, kotlinx-datetime and lifecycle-viewmodel
 transitively).
 
 ## Build and run
@@ -82,7 +100,7 @@ In Android Studio: add `useLocalShared=true` to `~/.gradle/gradle.properties` (o
 `app` configuration. Only the Android parts of `shared` are built.
 
 ### Option B — published artifact (default)
-By default the app depends on `com.example.tasks:shared:0.5.0` (`gradle/libs.versions.toml`) from
+By default the app depends on `com.example.tasks:shared:0.6.0` (`gradle/libs.versions.toml`) from
 GitHub Packages. GitHub Packages requires a token even for public packages — a classic PAT with
 `read:packages` in `~/.gradle/gradle.properties`:
 
@@ -96,7 +114,7 @@ Gradle reads the KMP Gradle module metadata and picks the Android variant (`shar
 Kotlin/Native is not involved. Updating shared = bump `shared` in `libs.versions.toml` in its own PR.
 
 ## Tests
-- App: JVM unit tests for the UI-model mappers (`app/src/test`, 13 tests) —
+- App: JVM unit tests for the UI-model mappers (`app/src/test`, 17 tests) —
   `./gradlew :app:testDebugUnitTest` (add `-PuseLocalShared=true` for option A).
 - Domain, repository and ViewModel tests live once in shared's `src/commonTest` and run on both
   platforms (`./gradlew allTests` in the shared repo).
