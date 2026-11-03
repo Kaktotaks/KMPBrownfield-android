@@ -27,17 +27,17 @@ dependencyResolutionManagement {
     }
 }
 
-// ⚡️ Звідки береться shared — два режими:
+// Where `shared` comes from — two modes:
 //
-// 1) За замовчуванням: опублікований артефакт com.example.tasks:shared:<version> з GitHub Packages
-//    (версія — libs.versions.toml → shared). Kotlin/Native та iOS-частина не збираються взагалі.
-//    GitHub Packages вимагає токен навіть для публічних пакетів: у ~/.gradle/gradle.properties
+// 1) Default: the published artifact com.example.tasks:shared:<version> from GitHub Packages
+//    (version: libs.versions.toml → shared). Kotlin/Native and the iOS part are not built at all.
+//    GitHub Packages requires a token even for public packages, in ~/.gradle/gradle.properties:
 //      GitHubPackagesUsername=<login>
-//      GitHubPackagesPassword=<classic PAT з read:packages>
+//      GitHubPackagesPassword=<classic PAT with read:packages>
 //
-// 2) Локальна розробка shared разом із застосунком: -PuseLocalShared=true
-//    (або useLocalShared=true у ~/.gradle/gradle.properties). Composite build підміняє
-//    координати com.example.tasks:shared вихідним кодом з ../shared — версія ігнорується.
+// 2) Sources from ../shared: -PuseLocalShared=true (or useLocalShared=true in
+//    ~/.gradle/gradle.properties). The composite build substitutes com.example.tasks:shared
+//    with the ../shared sources (the version is ignored). No token needed.
 val useLocalShared = providers.gradleProperty("useLocalShared").orNull == "true"
 
 if (useLocalShared) {
@@ -49,7 +49,7 @@ if (useLocalShared) {
                 name = "GitHubPackages"
                 url = uri("https://maven.pkg.github.com/Kaktotaks/KMPBrownfield-shared")
                 credentials(PasswordCredentials::class)
-                // Лише наші артефакти: решта залежностей не ходить у GitHub Packages.
+                // Only our artifacts: other dependencies never hit GitHub Packages.
                 content { includeGroup("com.example.tasks") }
             }
         }

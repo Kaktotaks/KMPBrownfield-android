@@ -1,5 +1,5 @@
 [versions]
-# ⚡️ Версія KMP shared (git-тег / GitHub Release / Maven). Оновлення = окремий PR.
+# KMP shared version (git tag / GitHub Release / Maven). Bump it in its own PR.
 shared = "0.5.0"
 agp = "9.4.1"
 kotlin = "2.4.21"
