@@ -96,7 +96,7 @@ fun VoiceNoteUiState.toCardModel(): VoiceCardModel = when (this) {
     is VoiceNoteUiState.Recording -> VoiceCardModel.Recording(
         timerText = VoiceNoteFormat.duration(elapsedMs),
         isWarning = isWarning,
-        timeLeftText = if (isWarning) VoiceNoteFormat.duration(remainingMs) else null,
+        timeLeftText = if (isWarning) VoiceNoteFormat.remaining(remainingMs) else null,
         levels = levels,
     )
     is VoiceNoteUiState.Ready -> note.toPlayerModel(progress, isPlaying, positionMs, speed)

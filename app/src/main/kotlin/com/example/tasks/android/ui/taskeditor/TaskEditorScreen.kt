@@ -176,7 +176,7 @@ fun TaskEditorScreen(
 // region Previews
 
 private fun previewModel(withErrors: Boolean) = TaskEditorUiModel(
-    screenTitle = "New Task",
+    screenTitle = "New task",
     title = "",
     notes = "Ask about the express option and bring the old passport.",
     priorityOptions = Priority.entries.map { SelectableOption(it, it == Priority.HIGH, label = it.displayName) },

@@ -43,6 +43,12 @@ class VoiceCardModelTest {
     }
 
     @Test
+    fun recordingWarningRoundsRemainingTimeUp() {
+        val m = VoiceNoteUiState.Recording(111_100, 8_900, isWarning = true, levels = List(32) { 0f }).toCardModel() as VoiceCardModel.Recording
+        assertEquals("0:09", m.timeLeftText)
+    }
+
+    @Test
     fun readyMapsTimeSpeedAndSpokenDuration() {
         val m = VoiceNoteUiState.Ready(note, positionMs = 12_300, isPlaying = true, speed = 1.5f, progress = 0.29f).toCardModel() as VoiceCardModel.Player
         assertEquals("0:12", m.positionText)

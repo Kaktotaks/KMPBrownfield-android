@@ -9,7 +9,7 @@ import kotlinx.datetime.LocalDate
 
 /** Everything [TaskEditorScreen] draws, already mapped. Plain Kotlin: no Compose, unit-tested on the JVM. */
 data class TaskEditorUiModel(
-    /** "New Task" / "Edit Task" (from shared). */
+    /** "New task" / "Edit task" (from shared). */
     val screenTitle: String,
     val title: String,
     val notes: String,
