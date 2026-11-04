@@ -106,12 +106,6 @@ internal fun RecordDot(size: Dp = 10.dp, modifier: Modifier = Modifier) {
     Box(modifier.size(size).clip(CircleShape).background(TasksTheme.colors.danger))
 }
 
-/** Stop glyph: a 14 dp rounded square. */
-@Composable
-internal fun StopSquare(color: Color) {
-    Box(Modifier.size(14.dp).clip(RoundedCornerShape(3.dp)).background(color))
-}
-
 /** Recording dot + halo; opacity pulses 1 <-> 0.3, 1000 ms per half-cycle, solid under reduced motion. */
 @Composable
 internal fun PulsingDot() {
@@ -181,7 +175,7 @@ fun VoiceRecorderView(model: VoiceCardModel.Recording, actions: VoiceCardActions
             )
             VoiceButton(
                 stringResource(R.string.voice_stop), actions.onStop, colors.accent, colors.onAccent,
-                Modifier.weight(2f), leading = { StopSquare(colors.onAccent) },
+                Modifier.weight(2f), icon = VoiceIcons.Stop,
             )
         }
     }
@@ -272,7 +266,7 @@ fun VoicePlayerView(
     val description = stringResource(R.string.voice_a11y_player, model.spokenDuration.asText())
     val playLabel = stringResource(if (model.isPlaying) R.string.voice_a11y_pause else R.string.voice_a11y_play)
     val speedAction = stringResource(R.string.voice_a11y_speed, model.speedLabel)
-    val position = "${model.positionText} / ${model.durationText}"
+    val position = stringResource(R.string.voice_a11y_progress, model.positionText, model.durationText)
     val semanticsModifier = Modifier.clearAndSetSemantics {
         contentDescription = description
         stateDescription = position

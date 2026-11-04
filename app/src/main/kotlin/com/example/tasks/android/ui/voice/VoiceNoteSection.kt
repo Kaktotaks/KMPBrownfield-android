@@ -25,6 +25,7 @@ import com.example.tasks.android.R
 import com.example.tasks.android.ui.theme.TasksShapes
 import com.example.tasks.android.ui.theme.TasksTheme
 import com.example.tasks.android.ui.theme.TasksType
+import com.example.tasks.shared.domain.VoiceNoteLimits
 import com.example.tasks.shared.presentation.VoiceNoteConfirmation
 import com.example.tasks.shared.presentation.VoiceNoteViewModel
 
@@ -115,17 +116,27 @@ private fun VoiceAnnouncements(model: VoiceCardModel) {
     val view = LocalView.current
     val started = stringResource(R.string.voice_a11y_started)
     val tenLeft = stringResource(R.string.voice_a11y_ten_left)
+    val player = model as? VoiceCardModel.Player
+    val stopped = player?.let {
+        if (it.durationMs >= VoiceNoteLimits.MAX_DURATION_MS) {
+            stringResource(R.string.voice_a11y_stopped_max)
+        } else {
+            stringResource(R.string.voice_a11y_stopped, it.spokenDuration.asText())
+        }
+    }
     var previous by remember { mutableStateOf<VoiceCardKind?>(null) }
-    val stoppedPrefix = (model as? VoiceCardModel.Player)?.spokenDuration?.asText()
-    val stopped = stoppedPrefix?.let { stringResource(R.string.voice_a11y_stopped, it) }
+    var fileBeforeRecording by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(model.kind) {
         val was = previous
         previous = model.kind
         when {
             model.kind == VoiceCardKind.Recording && was != VoiceCardKind.Recording -> view.announce(started)
-            was == VoiceCardKind.Recording && model.kind == VoiceCardKind.Player && stopped != null -> view.announce(stopped)
+            // A new clip was saved (Stop, 2:00 limit, backgrounding), not a cancel back to the old note.
+            was == VoiceCardKind.Recording && player != null && stopped != null && player.fileName != fileBeforeRecording ->
+                view.announce(stopped)
         }
+        if (model.kind != VoiceCardKind.Recording) fileBeforeRecording = player?.fileName
     }
     val warning = (model as? VoiceCardModel.Recording)?.isWarning == true
     LaunchedEffect(warning) { if (warning) view.announce(tenLeft) }

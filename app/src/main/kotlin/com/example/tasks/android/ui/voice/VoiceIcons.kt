@@ -12,26 +12,14 @@ import com.example.tasks.android.ui.components.strokeIcon
 
 /** Voice-note icons on the same 24 grid / stroke 2.2 / round caps as `TasksIcons` (tint with `Icon(tint = ...)`). */
 object VoiceIcons {
-    val Mic: ImageVector by lazy {
-        strokeIcon("mic", 2.2f,
-            "M12 2 C10.34 2 9 3.34 9 5 L9 12 C9 13.66 10.34 15 12 15 C13.66 15 15 13.66 15 12 L15 5 C15 3.34 13.66 2 12 2 Z",
-            "M19 10 L19 12 C19 15.87 15.87 19 12 19 C8.13 19 5 15.87 5 12 L5 10",
-            "M12 19 L12 22")
-    }
-    val MicOff: ImageVector by lazy {
-        strokeIcon("micOff", 2.2f,
-            "M2 2 L22 22",
-            "M18.89 13.23 C18.96 12.83 19 12.42 19 12 L19 10",
-            "M5 10 L5 12 C5 15.87 8.13 19 12 19 C13.62 19 15.11 18.45 16.3 17.53",
-            "M15 9.34 L15 5 C15 3.34 13.66 2 12 2 C10.82 2 9.8 2.68 9.32 3.67",
-            "M9 9 L9 12 C9 13.66 10.34 15 12 15 C12.8 15 13.52 14.69 14.06 14.18",
-            "M12 19 L12 22")
-    }
+    // Same drawings as iOS `VoiceIcon` (24 grid; see ios-app/.../UI/Voice/VoiceIcon.swift).
+    val Mic: ImageVector by lazy { strokeIcon("mic", 2.2f, MIC_CAPSULE, MIC_CRADLE, MIC_STAND) }
+    val MicOff: ImageVector by lazy { strokeIcon("micOff", 2.2f, MIC_CAPSULE, MIC_CRADLE, MIC_STAND, "M4 4 L20 20") }
     val ExternalLink: ImageVector by lazy {
         strokeIcon("externalLink", 2.2f,
-            "M18 13 L18 19 C18 20.1 17.1 21 16 21 L5 21 C3.9 21 3 20.1 3 19 L3 8 C3 6.9 3.9 6 5 6 L11 6",
-            "M15 3 L21 3 L21 9",
-            "M10 14 L21 3")
+            "M10 5 L7 5 C5.9 5 5 5.9 5 7 L5 17 C5 18.1 5.9 19 7 19 L17 19 C18.1 19 19 18.1 19 17 L19 14",
+            "M14 4.5 L19.5 4.5 L19.5 10",
+            "M19.5 4.5 L11 13")
     }
     val AlertTriangle: ImageVector by lazy {
         strokeIcon("alertTriangle", 2.2f,
@@ -45,7 +33,24 @@ object VoiceIcons {
     val Play: ImageVector by lazy { filledIcon("play", "M8 5.5 L18.5 12 L8 18.5 Z") }
 
     /** Two filled bars. */
-    val Pause: ImageVector by lazy { filledIcon("pause", "M7 5 L10 5 L10 19 L7 19 Z", "M14 5 L17 5 L17 19 L14 19 Z") }
+    val Pause: ImageVector by lazy { filledIcon("pause", roundRect(7f, 5.5f, 3.5f, 13f, 1f), roundRect(13.5f, 5.5f, 3.5f, 13f, 1f)) }
+
+    /** Filled rounded square. */
+    val Stop: ImageVector by lazy { filledIcon("stop", roundRect(6.5f, 6.5f, 11f, 11f, 2f)) }
+
+    private const val MIC_CAPSULE =
+        "M9 5.5 C9 3.843 10.343 2.5 12 2.5 C13.657 2.5 15 3.843 15 5.5 L15 10.5 C15 12.157 13.657 13.5 12 13.5 C10.343 13.5 9 12.157 9 10.5 Z"
+    private const val MIC_CRADLE = "M5.5 11 C5.5 14.6 8.4 17.5 12 17.5 C15.6 17.5 18.5 14.6 18.5 11"
+    private const val MIC_STAND = "M12 17.5 L12 21"
+
+    private fun roundRect(x: Float, y: Float, w: Float, h: Float, r: Float): String {
+        val k = r * 0.4477f // 1 - 0.5523: control-point offset of a quarter circle
+        fun f(v: Float) = "%.3f".format(java.util.Locale.ROOT, v)
+        return "M ${f(x + r)} ${f(y)} L ${f(x + w - r)} ${f(y)} C ${f(x + w - k)} ${f(y)} ${f(x + w)} ${f(y + k)} ${f(x + w)} ${f(y + r)} " +
+            "L ${f(x + w)} ${f(y + h - r)} C ${f(x + w)} ${f(y + h - k)} ${f(x + w - k)} ${f(y + h)} ${f(x + w - r)} ${f(y + h)} " +
+            "L ${f(x + r)} ${f(y + h)} C ${f(x + k)} ${f(y + h)} ${f(x)} ${f(y + h - k)} ${f(x)} ${f(y + h - r)} " +
+            "L ${f(x)} ${f(y + r)} C ${f(x)} ${f(y + k)} ${f(x + k)} ${f(y)} ${f(x + r)} ${f(y)} Z"
+    }
 
     private fun filledIcon(name: String, vararg paths: String): ImageVector =
         ImageVector.Builder(name = name, defaultWidth = 24.dp, defaultHeight = 24.dp, viewportWidth = 24f, viewportHeight = 24f)

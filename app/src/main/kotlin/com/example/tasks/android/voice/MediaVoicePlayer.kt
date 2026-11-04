@@ -37,7 +37,7 @@ class MediaVoicePlayer(private val context: Context) : AudioPlayer {
 
     override var onCompletion: (() -> Unit)? = null
 
-    override fun prepare(path: String): Long {
+    override fun prepare(path: String) {
         release()
         val p = MediaPlayer()
         try {
@@ -51,12 +51,13 @@ class MediaVoicePlayer(private val context: Context) : AudioPlayer {
             }
             player = p
             completed = false
-            return p.duration.toLong()
         } catch (e: Exception) {
             runCatching { p.release() }
             throw e
         }
     }
+
+    override fun durationMs(): Long = player?.let { runCatching { it.duration.toLong() }.getOrDefault(0L) } ?: 0L
 
     override fun play() {
         val p = player ?: return

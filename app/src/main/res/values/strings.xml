@@ -99,6 +99,9 @@
     <string name="voice_a11y_player">Voice note, %1$s</string>
     <string name="voice_a11y_started">Recording started</string>
     <string name="voice_a11y_stopped">Recording stopped, %1$s</string>
+    <string name="voice_a11y_stopped_max">Recording stopped, at 2 minutes</string>
+    <!-- Player state/value text: "0:12 of 0:42". -->
+    <string name="voice_a11y_progress">%1$s of %2$s</string>
     <string name="voice_a11y_ten_left">10 seconds left</string>
     <string name="voice_a11y_play">Play</string>
     <string name="voice_a11y_pause">Pause</string>

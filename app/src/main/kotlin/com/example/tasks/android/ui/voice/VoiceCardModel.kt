@@ -52,6 +52,10 @@ sealed interface VoiceCardModel {
     }
 
     data class Player(
+        /** Identifies the clip: a Recording -> Player change with a new name means a clip was saved (not a cancel). */
+        val fileName: String,
+        /** Needed to tell the 2:00 limit apart ("Recording stopped, at 2 minutes"). */
+        val durationMs: Long,
         /** 40 bars, 0..1. */
         val waveform: List<Float>,
         val progress: Float,
@@ -103,6 +107,8 @@ fun VoiceNoteUiState.toCardModel(): VoiceCardModel = when (this) {
 }
 
 fun VoiceNote.toPlayerModel(progress: Float, isPlaying: Boolean, positionMs: Long, speed: Float) = VoiceCardModel.Player(
+    fileName = fileName,
+    durationMs = durationMs,
     waveform = waveform,
     progress = progress.coerceIn(0f, 1f),
     isPlaying = isPlaying,

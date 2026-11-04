@@ -48,13 +48,14 @@ class FakeVoicePlayer(private val failOnPrepare: Boolean) : AudioPlayer {
     private var lastTick = 0L
     private var speed = 1f
 
-    override fun prepare(path: String): Long {
+    override fun prepare(path: String) {
         if (failOnPrepare) error("Fake player: forced Unavailable")
         durationMs = File(path).takeIf { it.exists() }?.readText()?.trim()?.toLongOrNull()?.takeIf { it > 0 } ?: 42_000L
         position = 0
         playing = false
-        return durationMs
     }
+
+    override fun durationMs(): Long = durationMs
 
     private fun advance() {
         if (!playing) return
