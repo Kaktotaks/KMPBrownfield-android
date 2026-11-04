@@ -8,6 +8,10 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.tasks.android.ui.components.TaskDetailViewModelFactory
+import com.example.tasks.android.ui.components.VoiceNoteDetailViewModelFactory
+import com.example.tasks.android.ui.voice.VoiceCardVariant
+import com.example.tasks.android.ui.voice.VoiceNoteSection
+import com.example.tasks.shared.presentation.VoiceNoteViewModel
 import com.example.tasks.android.ui.taskeditor.TaskEditorSheet
 import com.example.tasks.shared.presentation.TaskDetailViewModel
 
@@ -19,6 +23,8 @@ import com.example.tasks.shared.presentation.TaskDetailViewModel
 fun TaskDetailScreenRoute(
     onBack: () -> Unit,
     viewModel: TaskDetailViewModel = viewModel(factory = TaskDetailViewModelFactory),
+    // The voice-note VM (target = ExistingTask(route.taskId)) lives in the same back-stack entry as the detail VM.
+    voiceViewModel: VoiceNoteViewModel = viewModel(key = "voice", factory = VoiceNoteDetailViewModelFactory),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val model = remember(state) { state.toUiModel() }
@@ -37,6 +43,7 @@ fun TaskDetailScreenRoute(
             viewModel.onDelete()
             onBack()
         },
+        voiceSection = { VoiceNoteSection(voiceViewModel, VoiceCardVariant.Detail) },
     )
     if (showEditor) {
         TaskEditorSheet(taskId = viewModel.taskId, onDismiss = { showEditor = false })

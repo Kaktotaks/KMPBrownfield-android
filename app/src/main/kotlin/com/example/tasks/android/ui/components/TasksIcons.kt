@@ -11,7 +11,7 @@ import androidx.compose.ui.unit.dp
 // GENERATED from the shared icon table (same path data as iOS `TKIcon`): 24 grid, stroke 2.2, round caps.
 // Do not edit by hand; tint with `Icon(tint = ...)`.
 
-private fun strokeIcon(name: String, strokeWidth: Float, vararg paths: String): ImageVector =
+internal fun strokeIcon(name: String, strokeWidth: Float, vararg paths: String): ImageVector =
     ImageVector.Builder(name = name, defaultWidth = 24.dp, defaultHeight = 24.dp, viewportWidth = 24f, viewportHeight = 24f)
         .apply {
             paths.forEach { d ->

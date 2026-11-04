@@ -9,8 +9,8 @@ twin is [KMPBrownfield-ios](https://github.com/Kaktotaks/KMPBrownfield-ios), and
 
 How the app got here: [`docs/MIGRATION.md`](docs/MIGRATION.md) (brownfield migration log).
 
-The app loads 20 todos from `https://jsonplaceholder.typicode.com/todos?_limit=20` on start;
-afterwards all changes (add / edit / toggle / delete) live in memory only.
+The app seeds 20 todos from `https://jsonplaceholder.typicode.com/todos?_limit=20` on first launch; from then on the
+tasks (and their voice notes) live in a local SQLite database (shared 0.7.0) and survive restarts, offline.
 
 ## Design
 
@@ -26,6 +26,41 @@ ViewModels are untouched, and both apps look and behave the same except the chro
 More states (detail, editor with validation errors, error, empty) are in [`docs/design/screenshots`](docs/design/screenshots)
 next to the iOS counterparts. Screenshots of the two apps differ in data only (the iOS ones use the fake-data preview
 graph, the Android ones the live JSONPlaceholder data).
+
+## Voice notes
+
+A task can have one optional voice note (up to 2:00): record, play (seek, 1x / 1.5x / 2x), re-record and delete, in
+Task detail (a card under Notes) and in the editor (a section under Due date); the list shows a mic + duration
+indicator. Everything with logic (state machine, timer, limits, waveform, file lifecycle) is in shared's
+`VoiceNoteViewModel`; the app only provides:
+
+- `voice/MediaVoiceRecorder` (`MediaRecorder`: AAC in MPEG-4 .m4a, mono, 44.1 kHz, 64 kbps; level = `sqrt(maxAmplitude / 32767)`),
+- `voice/MediaVoicePlayer` (`MediaPlayer` + playback speed, transient audio focus, pauses on focus loss / headphones unplugged),
+- `voice/RuntimeMicPermission` + `ui/voice/MicPermissionHost` (Activity Result bridge),
+- `ui/voice/*`: `VoiceNoteCard`, `VoiceRecorderView`, `VoicePlayerView`, `VoiceNoteIndicator`, `MicPermissionCard`
+  (same names, layout and copy as iOS), previews for every state in light and dark.
+
+**Permission:** `RECORD_AUDIO` (runtime). It is requested only after the in-app explainer card ("Continue"). After a
+second denial the card offers "Open Settings" (`ACTION_APPLICATION_DETAILS_SETTINGS`); granting it there works on return.
+The app records only while the card shows the recorder; leaving the app stops the recording and keeps it.
+
+### Debug-only fake audio (screenshots, demos)
+
+The `debug` source set (`app/src/debug`, absent from release builds) can replace the microphone, the player and the
+permission dialog through launch extras (use `-S` so the process restarts):
+
+```
+adb shell am start -S -n com.example.tasks.android/.MainActivity \
+  --ez fakeVoiceAudio true --es fakeMicPermission notDetermined --es seedVoice "1:42000,2:18000"
+```
+
+| Extra | Values | Effect |
+|---|---|---|
+| `fakeVoiceAudio` (bool) | `true` | fake recorder (moving levels, no mic) and fake player (wall clock) |
+| `fakeMicPermission` (string) | `notDetermined` / `denied` / `granted` | fake permission; `request` grants it |
+| `fakeMicDenyOnRequest` (bool) | `true` | with the above: Continue answers "denied" -> Microphone access is off |
+| `forceVoiceError` (string) | `recordFailed` / `unavailable` | start throws -> "Couldn't record"; or the note cannot be played -> "Voice note unavailable" |
+| `seedVoice` (string) | `taskId:durationMs,...` | attaches a fake voice note (40 synthetic bars) to those tasks after the first load |
 
 ## Architecture
 
@@ -114,7 +149,8 @@ Gradle reads the KMP Gradle module metadata and picks the Android variant (`shar
 Kotlin/Native is not involved. Updating shared = bump `shared` in `libs.versions.toml` in its own PR.
 
 ## Tests
-- App: JVM unit tests for the UI-model mappers (`app/src/test`, 17 tests) —
+- App: JVM unit tests for the UI-model mappers, voice-note card mapping, level / permission / audio-focus logic and the
+  VoiceNoteViewModel targets (`app/src/test`, `app/src/testDebug`, 36 tests) —
   `./gradlew :app:testDebugUnitTest` (add `-PuseLocalShared=true` for option A).
 - Domain, repository and ViewModel tests live once in shared's `src/commonTest` and run on both
   platforms (`./gradlew allTests` in the shared repo).

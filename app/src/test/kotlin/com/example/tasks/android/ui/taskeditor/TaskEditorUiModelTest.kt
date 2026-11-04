@@ -60,8 +60,8 @@ class TaskEditorUiModelTest {
     fun fieldsAndLabels() {
         val model = state(isNew = false).toUiModel()
 
-        assertEquals("Edit Task", model.screenTitle)
-        assertEquals("New Task", state(isNew = true).toUiModel().screenTitle)
+        assertEquals("Edit task", model.screenTitle)
+        assertEquals("New task", state(isNew = true).toUiModel().screenTitle)
         assertEquals("Hi", model.title)
         assertEquals("n", model.notes)
         assertEquals("29 Oct 2026", model.dueDateText)

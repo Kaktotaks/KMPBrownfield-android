@@ -18,7 +18,7 @@
     <string name="empty_body">Tap + to add your first task.</string>
     <string name="no_match_title">No matching tasks</string>
     <string name="no_match_body">Try a different search or filter.</string>
-    <string name="error_title">Couldn\'t load tasks</string>
+    <string name="error_title">Couldn’t load tasks</string>
     <string name="error_body">Check your connection and try again.</string>
     <string name="retry">Retry</string>
     <string name="loading">Loading tasks…</string>
@@ -66,4 +66,54 @@
     <string name="a11y_mark_not_done">Mark %1$s not done</string>
     <string name="a11y_completion_value">%1$d percent, %2$d of %3$d tasks done</string>
     <string name="a11y_date_field">%1$s, %2$s</string>
+
+    <!-- Voice notes: keys follow VOICE_NOTES_HANDOFF §5 (identical on iOS); the notes board wins where the copy differs. -->
+    <string name="voice_section">Voice note</string>
+    <string name="voice_record">Record voice note</string>
+    <string name="voice_recording">Recording</string>
+    <string name="voice_max_hint">max 2:00</string>
+    <string name="voice_editor_hint">up to 2:00</string>
+    <!-- %1$s is the remaining time as m:ss (VoiceNoteFormat), e.g. "0:09 left". -->
+    <string name="voice_seconds_left">%1$s left</string>
+    <string name="voice_stop">Stop</string>
+    <string name="voice_cancel">Cancel</string>
+    <string name="voice_rerecord">Re-record</string>
+    <string name="voice_delete">Delete</string>
+    <string name="voice_empty_body">No voice note yet. Record a quick message for yourself, up to 2 minutes.</string>
+    <string name="voice_replace_title">Replace voice note?</string>
+    <string name="voice_replace_body">The current voice note will be deleted.</string>
+    <string name="voice_replace_confirm">Replace</string>
+    <string name="voice_delete_title">Delete voice note?</string>
+    <string name="voice_delete_body">This can’t be undone.</string>
+    <string name="voice_perm_title">Allow microphone to record voice notes</string>
+    <string name="voice_perm_body">Tasks uses the microphone only while you record.</string>
+    <string name="voice_perm_not_now">Not now</string>
+    <string name="voice_perm_continue">Continue</string>
+    <string name="voice_perm_denied_title">Microphone access is off</string>
+    <string name="voice_perm_denied_body">Turn it on in Settings to record voice notes.</string>
+    <string name="voice_open_settings">Open Settings</string>
+    <string name="voice_err_record">Couldn’t record. Try again.</string>
+    <string name="voice_err_unavailable">Voice note unavailable</string>
+    <string name="voice_err_unavailable_body">The recording can’t be played.</string>
+    <string name="voice_delete_note">Delete voice note</string>
+    <string name="voice_a11y_player">Voice note, %1$s</string>
+    <string name="voice_a11y_started">Recording started</string>
+    <string name="voice_a11y_stopped">Recording stopped, %1$s</string>
+    <string name="voice_a11y_stopped_max">Recording stopped, at 2 minutes</string>
+    <!-- Player state/value text: "0:12 of 0:42". -->
+    <string name="voice_a11y_progress">%1$s of %2$s</string>
+    <string name="voice_a11y_ten_left">10 seconds left</string>
+    <string name="voice_a11y_play">Play</string>
+    <string name="voice_a11y_pause">Pause</string>
+    <string name="voice_a11y_speed">Speed %1$s</string>
+    <string name="voice_a11y_rerecord">Re-record voice note</string>
+    <string name="voice_a11y_row">voice note, %1$s</string>
+    <plurals name="voice_a11y_seconds">
+        <item quantity="one">%d second</item>
+        <item quantity="other">%d seconds</item>
+    </plurals>
+    <plurals name="voice_a11y_minutes">
+        <item quantity="one">%d minute</item>
+        <item quantity="other">%d minutes</item>
+    </plurals>
 </resources>

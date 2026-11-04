@@ -43,6 +43,11 @@ import com.example.tasks.android.ui.components.TasksVisibility
 import com.example.tasks.android.ui.components.priorityBar
 import com.example.tasks.android.ui.theme.TasksTheme
 import com.example.tasks.android.ui.theme.TasksType
+import com.example.tasks.android.ui.voice.VoiceCardActions
+import com.example.tasks.android.ui.voice.VoiceCardModel
+import com.example.tasks.android.ui.voice.VoiceCardVariant
+import com.example.tasks.android.ui.voice.VoiceNoteCard
+import com.example.tasks.android.ui.voice.VoicePreviewData
 import com.example.tasks.shared.domain.Priority
 
 /**
@@ -59,6 +64,8 @@ fun TaskEditorScreen(
     onDueDateSelected: (Long) -> Unit,
     onSave: () -> Unit,
     onCancel: () -> Unit,
+    /** The voice-note section under Due date; supplied by the sheet (stateful) or a preview. */
+    voiceSection: @Composable () -> Unit = {},
 ) {
     val colors = TasksTheme.colors
     // Purely visual state: the system date picker.
@@ -124,6 +131,7 @@ fun TaskEditorScreen(
                 onClick = { showDatePicker = true },
                 error = model.dueDateError,
             )
+            voiceSection()
         }
     }
 
@@ -168,7 +176,7 @@ fun TaskEditorScreen(
 // region Previews
 
 private fun previewModel(withErrors: Boolean) = TaskEditorUiModel(
-    screenTitle = "New Task",
+    screenTitle = "New task",
     title = "",
     notes = "Ask about the express option and bring the old passport.",
     priorityOptions = Priority.entries.map { SelectableOption(it, it == Priority.HIGH, label = it.displayName) },
@@ -181,13 +189,32 @@ private fun previewModel(withErrors: Boolean) = TaskEditorUiModel(
 )
 
 @Composable
-private fun PreviewScreen(model: TaskEditorUiModel, dark: Boolean) {
+private fun PreviewScreen(model: TaskEditorUiModel, dark: Boolean, voice: VoiceCardModel? = null) {
     TasksTheme(darkTheme = dark) {
         Box(Modifier.fillMaxWidth().background(TasksTheme.colors.bg)) {
-            TaskEditorScreen(model, {}, {}, {}, {}, {}, {})
+            TaskEditorScreen(
+                model, {}, {}, {}, {}, {}, {},
+                voiceSection = { if (voice != null) VoiceNoteCard(voice, VoiceCardActions.None, variant = VoiceCardVariant.Editor) },
+            )
         }
     }
 }
+
+@Preview(name = "Editor + empty voice light", showBackground = true, heightDp = 800)
+@Composable
+private fun TaskEditorVoiceEmptyLightPreview() = PreviewScreen(previewModel(false), dark = false, voice = VoiceCardModel.Empty)
+
+@Preview(name = "Editor + recorded voice light", showBackground = true, heightDp = 800)
+@Composable
+private fun TaskEditorVoiceRecordedLightPreview() = PreviewScreen(previewModel(false), dark = false, voice = VoicePreviewData.player)
+
+@Preview(name = "Editor + recording warning light", showBackground = true, heightDp = 800)
+@Composable
+private fun TaskEditorVoiceWarningLightPreview() = PreviewScreen(previewModel(false), dark = false, voice = VoicePreviewData.recordingWarning)
+
+@Preview(name = "Editor + recorded voice dark", showBackground = true, heightDp = 800)
+@Composable
+private fun TaskEditorVoiceRecordedDarkPreview() = PreviewScreen(previewModel(false), dark = true, voice = VoicePreviewData.player)
 
 @Preview(name = "Editor errors light", showBackground = true, heightDp = 800)
 @Composable

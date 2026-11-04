@@ -37,13 +37,14 @@ import com.example.tasks.android.ui.theme.TasksType
 fun HeroCard(
     modifier: Modifier = Modifier,
     padding: androidx.compose.ui.unit.Dp = 22.dp,
+    containerColor: Color = TasksTheme.colors.heroBg,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     Column(
         modifier = modifier
             .fillMaxWidth()
             .clip(TasksShapes.xl)
-            .background(TasksTheme.colors.heroBg)
+            .background(containerColor)
             .padding(padding),
         content = content,
     )

@@ -13,6 +13,10 @@ import com.example.tasks.android.ui.navigation.TaskDetailRoute
 import com.example.tasks.shared.presentation.StatsViewModel
 import com.example.tasks.shared.presentation.TaskDetailViewModel
 import com.example.tasks.shared.presentation.TaskListViewModel
+import com.example.tasks.shared.presentation.VoiceNoteTarget
+import com.example.tasks.shared.presentation.VoiceNoteViewModel
+import com.example.tasks.android.voice.VoiceTargets
+import com.example.tasks.shared.domain.VoiceNote
 
 // ViewModel logic and UiState types live in `shared` (com.example.tasks.shared.presentation).
 // On Android they are ordinary androidx ViewModels: ViewModelProvider creates them, they survive
@@ -49,3 +53,30 @@ val StatsViewModelFactory: ViewModelProvider.Factory = viewModelFactory {
         StatsViewModel(container.taskRepository, container.dateProvider)
     }
 }
+
+/**
+ * The voice-note VM gets its own recorder/player (Detail and the editor sheet can be alive at once), the one shared
+ * microphone-permission provider, and `files` = the repository's own VoiceNoteFiles (API contract §5).
+ */
+fun AppContainer.createVoiceNoteViewModel(target: VoiceNoteTarget): VoiceNoteViewModel = VoiceNoteViewModel(
+    target = target,
+    repository = taskRepository,
+    files = voiceFiles,
+    recorder = voiceAdapters.newRecorder(),
+    player = voiceAdapters.newPlayer(),
+    permission = voiceAdapters.permissionProvider(),
+)
+
+/** Detail: the target comes from the route (`ExistingTask(taskId)`); scoped to the Detail back-stack entry. */
+val VoiceNoteDetailViewModelFactory: ViewModelProvider.Factory = viewModelFactory {
+    initializer {
+        val taskId = createSavedStateHandle().toRoute<TaskDetailRoute>().taskId
+        appContainer().createVoiceNoteViewModel(VoiceTargets.forTask(taskId))
+    }
+}
+
+/** Editor sheet: a `Draft(initial)` VM owned by the sheet, bound to the editor VM by the caller (`bindTo`). */
+fun voiceNoteDraftViewModelFactory(container: AppContainer, initial: VoiceNote?): ViewModelProvider.Factory =
+    viewModelFactory {
+        initializer { container.createVoiceNoteViewModel(VoiceTargets.forEditor(initial)) }
+    }
