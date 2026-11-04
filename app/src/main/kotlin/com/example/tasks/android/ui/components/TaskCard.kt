@@ -14,6 +14,8 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -51,6 +53,9 @@ import com.example.tasks.android.ui.theme.Motion
 import com.example.tasks.android.ui.theme.TasksShapes
 import com.example.tasks.android.ui.theme.TasksTheme
 import com.example.tasks.android.ui.theme.TasksType
+import com.example.tasks.android.ui.voice.SpokenDuration
+import com.example.tasks.android.ui.voice.VoiceNoteIndicator
+import com.example.tasks.android.ui.voice.asText
 import com.example.tasks.shared.domain.Priority
 
 /**
@@ -58,6 +63,7 @@ import com.example.tasks.shared.domain.Priority
  * Accessibility: the content is ONE element ("title, High priority, Due …, overdue") with role Button and a
  * custom action that toggles; the checkbox stays individually focusable (§7).
  */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun TaskCard(
     title: String,
@@ -68,6 +74,9 @@ fun TaskCard(
     onClick: () -> Unit,
     onToggle: () -> Unit,
     modifier: Modifier = Modifier,
+    /** Voice-note indicator text ("0:42"); null = no voice note. */
+    voiceDurationText: String? = null,
+    voiceDurationMs: Long? = null,
 ) {
     val colors = TasksTheme.colors
     var pressed by remember { mutableStateOf(false) }
@@ -85,10 +94,16 @@ fun TaskCard(
     val overdueWord = stringResource(R.string.a11y_overdue)
     val doneWord = stringResource(R.string.a11y_done)
     val toggleAction = stringResource(if (isDone) R.string.mark_active else R.string.mark_done)
+    val voiceLabel = if (voiceDurationText != null) {
+        stringResource(R.string.voice_a11y_row, SpokenDuration.of(voiceDurationMs ?: 0L).asText())
+    } else {
+        null
+    }
     val cardLabel = listOfNotNull(
         title, priorityName, dueText,
         if (isDone) doneWord else null,
         if (isOverdue) overdueWord else null,
+        voiceLabel,
     ).joinToString(", ")
 
     Row(
@@ -141,7 +156,20 @@ fun TaskCard(
                 )
                 PriorityBadge(priority)
             }
-            DueLine(dueDate = dueDate, isOverdue = isOverdue, isDone = isDone)
+            // The indicator joins the due line behind a 1 x 14 divider and wraps to its own line when it does not fit.
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+                itemVerticalAlignment = Alignment.CenterVertically,
+            ) {
+                DueLine(dueDate = dueDate, isOverdue = isOverdue, isDone = isDone)
+                if (voiceDurationText != null) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Box(Modifier.size(width = 1.dp, height = 14.dp).background(colors.border))
+                        VoiceNoteIndicator(voiceDurationText)
+                    }
+                }
+            }
         }
     }
 }

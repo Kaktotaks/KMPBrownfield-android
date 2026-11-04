@@ -39,6 +39,10 @@ data class TaskRowUi(
     val isOverdue: Boolean,
     val isDone: Boolean,
     val priority: Priority,
+    /** "0:42" (shared `VoiceNoteFormat`) when the task has a voice note, else null. */
+    val voiceDurationText: String? = null,
+    /** Duration of the voice note, for the spoken row label ("voice note, 42 seconds"). */
+    val voiceDurationMs: Long? = null,
 )
 
 @StringRes
@@ -81,4 +85,6 @@ fun Task.toRowUi(today: LocalDate): TaskRowUi = TaskRowUi(
     isOverdue = isOverdue(today),
     isDone = isDone,
     priority = priority,
+    voiceDurationText = voiceDurationText,
+    voiceDurationMs = voiceNote?.durationMs,
 )

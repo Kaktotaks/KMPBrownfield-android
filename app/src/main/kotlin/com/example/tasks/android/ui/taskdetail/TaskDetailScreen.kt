@@ -45,6 +45,10 @@ import com.example.tasks.android.ui.components.TasksIcons
 import com.example.tasks.android.ui.theme.TasksShapes
 import com.example.tasks.android.ui.theme.TasksTheme
 import com.example.tasks.android.ui.theme.TasksType
+import com.example.tasks.android.ui.voice.VoiceCardActions
+import com.example.tasks.android.ui.voice.VoiceCardModel
+import com.example.tasks.android.ui.voice.VoiceNoteCard
+import com.example.tasks.android.ui.voice.VoicePreviewData
 import com.example.tasks.shared.domain.Priority
 
 /** Stateless Task detail (§3.2): layout only. Chrome is the back arrow only; no Edit in the bar. */
@@ -56,6 +60,8 @@ fun TaskDetailScreen(
     onToggle: () -> Unit,
     onDelete: () -> Unit,
     isDeleting: Boolean = false,
+    /** The voice-note card (§ voice notes), shown under Notes; supplied by the route (stateful) or a preview. */
+    voiceSection: @Composable () -> Unit = {},
 ) {
     val colors = TasksTheme.colors
     // Purely visual state: the delete confirmation dialog.
@@ -71,7 +77,7 @@ fun TaskDetailScreen(
                 title = stringResource(R.string.not_found_title),
                 body = stringResource(R.string.not_found_body),
             )
-            model is TaskDetailUiModel.Loaded -> TaskDetailContent(model, onEdit, onToggle) { confirmDelete = true }
+            model is TaskDetailUiModel.Loaded -> TaskDetailContent(model, onEdit, onToggle, voiceSection) { confirmDelete = true }
         }
     }
 
@@ -100,6 +106,7 @@ private fun TaskDetailContent(
     model: TaskDetailUiModel.Loaded,
     onEdit: () -> Unit,
     onToggle: () -> Unit,
+    voiceSection: @Composable () -> Unit,
     onDeleteClick: () -> Unit,
 ) {
     val colors = TasksTheme.colors
@@ -110,7 +117,8 @@ private fun TaskDetailContent(
             .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        HeroCard {
+        // Dark detail: the ink hero becomes `surface2` so it reads against true black (voice notes notes board).
+        HeroCard(containerColor = if (colors.isDark) colors.surface2 else colors.heroBg) {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                 PriorityBadge(model.priority)
                 StatusBadge(model.isDone)
@@ -143,6 +151,8 @@ private fun TaskDetailContent(
                 Text(model.notes, style = TasksType.body, color = colors.textPrimary)
             }
         }
+
+        voiceSection()
 
         InfoRowsCard(
             listOf(
@@ -180,11 +190,30 @@ private val previewLoaded = TaskDetailUiModel.Loaded(
 )
 
 @Composable
-private fun PreviewScreen(model: TaskDetailUiModel, dark: Boolean) {
+private fun PreviewScreen(model: TaskDetailUiModel, dark: Boolean, voice: VoiceCardModel? = null) {
     TasksTheme(darkTheme = dark) {
-        TaskDetailScreen(model = model, onBack = {}, onEdit = {}, onToggle = {}, onDelete = {})
+        TaskDetailScreen(
+            model = model, onBack = {}, onEdit = {}, onToggle = {}, onDelete = {},
+            voiceSection = { if (voice != null) VoiceNoteCard(voice, VoiceCardActions.None) },
+        )
     }
 }
+
+@Preview(name = "Detail + empty voice light", showBackground = true, heightDp = 800)
+@Composable
+private fun TaskDetailVoiceEmptyLightPreview() = PreviewScreen(previewLoaded, dark = false, voice = VoiceCardModel.Empty)
+
+@Preview(name = "Detail + player light", showBackground = true, heightDp = 800)
+@Composable
+private fun TaskDetailVoicePlayerLightPreview() = PreviewScreen(previewLoaded, dark = false, voice = VoicePreviewData.player)
+
+@Preview(name = "Detail + player dark", showBackground = true, heightDp = 800)
+@Composable
+private fun TaskDetailVoicePlayerDarkPreview() = PreviewScreen(previewLoaded, dark = true, voice = VoicePreviewData.player)
+
+@Preview(name = "Detail + recording dark", showBackground = true, heightDp = 800)
+@Composable
+private fun TaskDetailVoiceRecordingDarkPreview() = PreviewScreen(previewLoaded, dark = true, voice = VoicePreviewData.recording)
 
 @Preview(name = "Detail light", showBackground = true, heightDp = 800)
 @Composable

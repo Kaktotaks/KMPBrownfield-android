@@ -37,6 +37,8 @@ data class TasksColors(
     val heroTextSecondary: Color,
     val ringTrack: Color,
     val scrim: Color,
+    /** Voice-note waveform: unplayed bars (played bars use `textPrimary`, the recording dot uses `danger`). */
+    val waveformTrack: Color,
     val isDark: Boolean,
 )
 
@@ -68,6 +70,7 @@ val LightTasksColors = TasksColors(
     heroTextSecondary = Color(0xFFB3B3AD),
     ringTrack = Color(0xFF2A2A2A),
     scrim = Color(0x660A0A0A), // #0A0A0A @ 40%
+    waveformTrack = Color(0xFFE2E2DA),
     isDark = false,
 )
 
@@ -99,6 +102,7 @@ val DarkTasksColors = TasksColors(
     heroTextSecondary = Color(0xFFB3B3AD),
     ringTrack = Color(0xFF2A2A2A),
     scrim = Color(0x99000000), // #000000 @ 60%
+    waveformTrack = Color(0xFF3A3A36), // the dark `border` (#2A2A2A) was too faint on `surface`
     isDark = true,
 )
 

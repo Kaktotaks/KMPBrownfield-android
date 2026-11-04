@@ -162,6 +162,8 @@ private fun TaskRows(rows: List<TaskRowUi>, onToggle: (Int) -> Unit, onOpenTask:
                 priority = row.priority,
                 isDone = row.isDone,
                 isOverdue = row.isOverdue,
+                voiceDurationText = row.voiceDurationText,
+                voiceDurationMs = row.voiceDurationMs,
                 onClick = { onOpenTask(row.id) },
                 onToggle = { onToggle(row.id) },
                 // M4: items fade in/out and move, 250 ms emphasized (snaps under reduced motion).
@@ -191,11 +193,11 @@ private fun previewModel(content: TaskListUiModel.Content, query: String = "") =
 
 private val previewRows = TaskListUiModel.Content.Loaded(
     listOf(
-        TaskRowUi(1, "Renew passport photos", "31 Oct 2026", isOverdue = true, isDone = false, priority = Priority.HIGH),
+        TaskRowUi(1, "Renew passport photos", "31 Oct 2026", isOverdue = true, isDone = false, priority = Priority.HIGH, voiceDurationText = "1:05", voiceDurationMs = 65_000),
         TaskRowUi(2, "Pay electricity bill", "1 Nov 2026", isOverdue = false, isDone = true, priority = Priority.LOW),
         TaskRowUi(3, "Review pull request for offline sync", "2 Nov 2026", isOverdue = false, isDone = true, priority = Priority.MEDIUM),
-        TaskRowUi(4, "Call the dentist to reschedule", "4 Nov 2026", isOverdue = false, isDone = false, priority = Priority.MEDIUM),
-        TaskRowUi(5, "Prepare sprint demo slides", "5 Nov 2026", isOverdue = false, isDone = false, priority = Priority.HIGH),
+        TaskRowUi(4, "Call the dentist to reschedule", "4 Nov 2026", isOverdue = false, isDone = false, priority = Priority.MEDIUM, voiceDurationText = "0:18", voiceDurationMs = 18_000),
+        TaskRowUi(5, "Prepare sprint demo slides", "5 Nov 2026", isOverdue = false, isDone = false, priority = Priority.HIGH, voiceDurationText = "0:42", voiceDurationMs = 42_000),
     ),
 )
 
