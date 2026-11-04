@@ -38,7 +38,7 @@ class MediaVoicePlayer(private val context: Context) : AudioPlayer {
     override var onCompletion: (() -> Unit)? = null
 
     override fun prepare(path: String) {
-        release()
+        dispose()
         val p = MediaPlayer()
         try {
             p.setAudioAttributes(attributes)
@@ -97,7 +97,7 @@ class MediaVoicePlayer(private val context: Context) : AudioPlayer {
 
     override fun isPlaying(): Boolean = player?.let { runCatching { it.isPlaying }.getOrDefault(false) } ?: false
 
-    override fun release() {
+    override fun dispose() {
         stopListeningForFocusLoss()
         player?.let { runCatching { it.release() } }
         player = null

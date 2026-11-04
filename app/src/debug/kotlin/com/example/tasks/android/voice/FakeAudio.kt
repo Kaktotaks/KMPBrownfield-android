@@ -101,7 +101,7 @@ class FakeVoicePlayer(private val failOnPrepare: Boolean) : AudioPlayer {
         return playing
     }
 
-    override fun release() {
+    override fun dispose() {
         playing = false
     }
 }
