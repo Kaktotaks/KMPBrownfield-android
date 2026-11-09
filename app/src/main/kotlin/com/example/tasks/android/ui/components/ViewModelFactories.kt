@@ -10,6 +10,8 @@ import androidx.navigation.toRoute
 import com.example.tasks.android.AppContainer
 import com.example.tasks.android.TasksApplication
 import com.example.tasks.android.ui.navigation.TaskDetailRoute
+import com.example.tasks.shared.presentation.MapViewModel
+import com.example.tasks.shared.presentation.PlaceSearchViewModel
 import com.example.tasks.shared.presentation.StatsViewModel
 import com.example.tasks.shared.presentation.TaskDetailViewModel
 import com.example.tasks.shared.presentation.TaskListViewModel
@@ -52,6 +54,22 @@ val StatsViewModelFactory: ViewModelProvider.Factory = viewModelFactory {
         val container = appContainer()
         StatsViewModel(container.taskRepository, container.dateProvider)
     }
+}
+
+/** App language for Nominatim's `accept-language`: Ukrainian or English (the two supported languages). */
+fun appLanguage(): String = if (java.util.Locale.getDefault().language == "uk") "uk" else "en"
+
+/** The Map tab VM: shared routing / geocoding, and the app clock (frozen only by the debug screenshot hook). */
+val MapViewModelFactory: ViewModelProvider.Factory = viewModelFactory {
+    initializer {
+        val container = appContainer()
+        MapViewModel(container.taskRepository, container.createRouting(), container.createGeocoder(appLanguage()), container.clock)
+    }
+}
+
+/** Address search of the editor's Place row. */
+fun placeSearchViewModelFactory(container: AppContainer): ViewModelProvider.Factory = viewModelFactory {
+    initializer { PlaceSearchViewModel(container.createGeocoder(appLanguage()), appLanguage()) }
 }
 
 /**
