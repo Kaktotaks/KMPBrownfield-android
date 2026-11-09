@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="tasks_bg">#000000</color>
+    <!-- Launch frame + in-app splash overlay background (same in light and dark). -->
+    <color name="splash_bg">#0A0A0A</color>
 </resources>
