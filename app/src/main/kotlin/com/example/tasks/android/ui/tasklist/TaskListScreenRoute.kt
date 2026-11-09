@@ -1,6 +1,7 @@
 package com.example.tasks.android.ui.tasklist
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -10,6 +11,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.tasks.android.ui.components.TaskListViewModelFactory
 import com.example.tasks.android.ui.taskeditor.NEW_TASK_ID
 import com.example.tasks.android.ui.taskeditor.TaskEditorSheet
+import com.example.tasks.shared.presentation.TaskListContent
 import com.example.tasks.shared.presentation.TaskListViewModel
 
 /**
@@ -20,10 +22,15 @@ import com.example.tasks.shared.presentation.TaskListViewModel
 @Composable
 fun TaskListScreenRoute(
     onOpenTask: (Int) -> Unit,
+    /** Called once the list content is no longer Loading (Loaded or Error); the splash waits on it. */
+    onSettled: () -> Unit = {},
     viewModel: TaskListViewModel = viewModel(factory = TaskListViewModelFactory),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val model = remember(state) { state.toUiModel() }
+    LaunchedEffect(state.content) {
+        if (state.content !is TaskListContent.Loading) onSettled()
+    }
     // Purely visual state: whether the editor sheet is open.
     var showEditor by remember { mutableStateOf(false) }
 

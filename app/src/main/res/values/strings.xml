@@ -116,4 +116,8 @@
         <item quantity="one">%d minute</item>
         <item quantity="other">%d minutes</item>
     </plurals>
+
+    <!-- Animated splash (design-handoff/splash). -->
+    <string name="splash_wordmark">Tasks</string>
+    <string name="splash_caption">One shared core · two native apps</string>
 </resources>

@@ -56,6 +56,8 @@ dependencies {
     implementation(libs.shared)
 
     implementation(libs.androidx.core.ktx)
+    // Launch frame: plain #0A0A0A (Theme.App.Starting), hands over to the in-app SplashOverlay at once.
+    implementation(libs.androidx.core.splashscreen)
     implementation(libs.androidx.activity.compose)
 
     implementation(platform(libs.androidx.compose.bom))

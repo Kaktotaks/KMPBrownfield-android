@@ -2,4 +2,6 @@
 <resources>
     <!-- Window background before Compose draws: token `bg` (DESIGN_HANDOFF §9), so dark mode doesn't flash white. -->
     <color name="tasks_bg">#F5F5F0</color>
+    <!-- Launch frame + in-app splash overlay background (same in light and dark). -->
+    <color name="splash_bg">#0A0A0A</color>
 </resources>

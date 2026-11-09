@@ -48,7 +48,7 @@ private val tabs = listOf(
 
 /** Root: Scaffold + bottom NavigationBar (2 tabs) + NavHost. The editor is a sheet hosted by its screens. */
 @Composable
-fun TasksRoot() {
+fun TasksRoot(onListSettled: () -> Unit = {}) {
     val colors = TasksTheme.colors
     val navController = rememberNavController()
     val backStackEntry by navController.currentBackStackEntryAsState()
@@ -101,7 +101,10 @@ fun TasksRoot() {
         ) {
             navigation<TasksGraph>(startDestination = TaskListRoute) {
                 composable<TaskListRoute> {
-                    TaskListScreenRoute(onOpenTask = { id -> navController.navigate(TaskDetailRoute(id)) })
+                    TaskListScreenRoute(
+                        onOpenTask = { id -> navController.navigate(TaskDetailRoute(id)) },
+                        onSettled = onListSettled,
+                    )
                 }
                 composable<TaskDetailRoute> {
                     TaskDetailScreenRoute(onBack = { navController.popBackStack() })
