@@ -71,4 +71,20 @@ class TaskEditorUiModelTest {
         assertTrue(model.canSave)
         assertEquals(0, model.errorFieldCount)
     }
+
+    @Test
+    fun timeAndPlaceMapToTheirRows() {
+        val withBoth = state().copy(
+            time = kotlinx.datetime.LocalTime(14, 5),
+            place = com.example.tasks.shared.domain.Place(com.example.tasks.shared.domain.GeoPoint(48.46, 35.04), "Shevchenka St 9"),
+        ).toUiModel()
+        assertEquals("14:05", withBoth.timeText)
+        assertEquals(14, withBoth.timeHour)
+        assertEquals(5, withBoth.timeMinute)
+        assertEquals("Shevchenka St 9", withBoth.placeAddress)
+
+        val without = state().toUiModel()
+        assertNull(without.timeText)
+        assertNull(without.placeAddress)
+    }
 }

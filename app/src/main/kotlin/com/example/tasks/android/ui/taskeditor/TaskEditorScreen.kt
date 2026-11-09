@@ -28,6 +28,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.background
 import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.text.AnnotatedString
+import kotlinx.datetime.LocalTime
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.tooling.preview.Preview
@@ -37,7 +39,10 @@ import com.example.tasks.android.ui.components.DateField
 import com.example.tasks.android.ui.components.ErrorBanner
 import com.example.tasks.android.ui.components.PillSegmentedControl
 import com.example.tasks.android.ui.components.SavePill
+import com.example.tasks.android.ui.components.PlaceField
 import com.example.tasks.android.ui.components.SelectableOption
+import com.example.tasks.android.ui.components.TimeField
+import com.example.tasks.android.ui.components.TimePickerDialog
 import com.example.tasks.android.ui.components.TasksTextField
 import com.example.tasks.android.ui.components.TasksVisibility
 import com.example.tasks.android.ui.components.priorityBar
@@ -66,10 +71,16 @@ fun TaskEditorScreen(
     onCancel: () -> Unit,
     /** The voice-note section under Due date; supplied by the sheet (stateful) or a preview. */
     voiceSection: @Composable () -> Unit = {},
+    /** Optional time of day (M3 TimePicker); [onTimeCleared] = "No time". */
+    onTimeSelected: (LocalTime) -> Unit = {},
+    onTimeCleared: () -> Unit = {},
+    /** Opens the address search (the accessible alternative to long-press / drag on the Map). */
+    onPlaceClick: () -> Unit = {},
 ) {
     val colors = TasksTheme.colors
     // Purely visual state: the system date picker.
     var showDatePicker by remember { mutableStateOf(false) }
+    var showTimePicker by remember { mutableStateOf(false) }
 
     Column(Modifier.fillMaxWidth().imePadding().navigationBarsPadding()) {
         // Header: 3-column grid.
@@ -131,8 +142,30 @@ fun TaskEditorScreen(
                 onClick = { showDatePicker = true },
                 error = model.dueDateError,
             )
+            TimeField(
+                label = stringResource(R.string.editor_time),
+                valueText = AnnotatedString(model.timeText ?: stringResource(R.string.editor_no_time)),
+                onClick = { showTimePicker = true },
+                isPlaceholder = model.timeText == null,
+            )
+            PlaceField(
+                label = stringResource(R.string.editor_place),
+                valueText = model.placeAddress ?: stringResource(R.string.editor_add_place),
+                onClick = onPlaceClick,
+                isPlaceholder = model.placeAddress == null,
+            )
             voiceSection()
         }
+    }
+
+    if (showTimePicker) {
+        TimePickerDialog(
+            initial = model.timeHour?.let { LocalTime(it, model.timeMinute ?: 0) },
+            defaultTime = LocalTime(9, 0),
+            onConfirm = { onTimeSelected(it); showTimePicker = false },
+            onClear = { onTimeCleared(); showTimePicker = false },
+            onDismiss = { showTimePicker = false },
+        )
     }
 
     if (showDatePicker) {
