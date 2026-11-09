@@ -13,6 +13,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import com.example.tasks.android.ui.map.MapDebug
 import com.example.tasks.android.ui.navigation.TasksRoot
 import com.example.tasks.android.ui.splash.SplashDebug
 import com.example.tasks.android.ui.splash.SplashOverlay
@@ -29,6 +30,10 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         val container = (application as TasksApplication).container
         DebugHooks.onMainActivityCreated(this, container) // no-op in release
+        // Debug-only screenshot hooks (frozen "now", demo day, OSRM host): they must run BEFORE the first load, because the
+        // repository seeds the demo route relative to its clock. No-op in release.
+        MapDebug.configure(intent, container)
+        (application as TasksApplication).startLoading()
 
         val frozenAtMs = SplashDebug.frozenAtMs(intent) // null in release
         // Cold start only: not after a rotation / process restore (saved state), not for a deep link,
