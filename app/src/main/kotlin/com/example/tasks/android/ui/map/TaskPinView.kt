@@ -35,6 +35,15 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.RoundRect
+import androidx.compose.ui.graphics.Matrix
+import androidx.compose.ui.graphics.Outline
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.PathOperation
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TransformOrigin
@@ -63,6 +72,21 @@ internal object PinGeometry {
     val height = 76.dp
     const val ANCHOR_X = 28f
     const val ANCHOR_Y = 46f
+}
+
+/**
+ * Outline of the whole pin body (56 x 50 dp box): the 40 dp ring circle at (8, 2) united with the tail ring, the 10 dp tail
+ * square grown by 2 dp on every side (14 dp, corner 3 dp) and rotated 45 degrees about (28, 38).
+ */
+private object PinOutlineShape : Shape {
+    override fun createOutline(size: Size, layoutDirection: LayoutDirection, density: Density): Outline {
+        val d = density.density
+        val circle = Path().apply { addOval(Rect(8f * d, 2f * d, 48f * d, 42f * d)) }
+        val tail = Path().apply { addRoundRect(RoundRect(Rect(-7f * d, -7f * d, 7f * d, 7f * d), CornerRadius(3f * d))) }
+        tail.transform(Matrix().apply { rotateZ(45f) })
+        tail.translate(Offset(28f * d, 38f * d))
+        return Outline.Generic(Path.combine(PathOperation.Union, circle, tail))
+    }
 }
 
 private val pinSmallText = TextStyle(fontFamily = Inter, fontWeight = FontWeight.Bold, fontSize = 11.sp, lineHeight = 16.sp, fontFeatureSettings = "tnum")
@@ -143,39 +167,37 @@ internal fun TaskPinView(
                 }
             }
             Box(Modifier.size(56.dp, 50.dp).alpha(pin.bodyOpacity)) {
-                // Tail: 10 dp diamond with a 2 dp ring offset to the lower right.
+                // One teardrop: the 2 dp ring and the drop shadow follow the union of the head and the tail, drawn
+                // first; the coloured tail and head sit on top, so the tail reads as part of the bubble.
+                Box(
+                    Modifier
+                        .size(56.dp, 50.dp)
+                        .shadow(if (pin.lifted) 10.dp else 3.dp, PinOutlineShape, clip = false)
+                        .background(ring, PinOutlineShape),
+                )
                 Canvas(Modifier.size(56.dp, 50.dp)) {
                     val s = 10.dp.toPx()
                     val tl = Offset(23.dp.toPx(), 33.dp.toPx())
-                    val pivot = Offset(28.dp.toPx(), 38.dp.toPx())
-                    rotate(45f, pivot) {
-                        drawRoundRect(ring, tl + Offset(2.dp.toPx(), 2.dp.toPx()), Size(s, s), CornerRadius(2.dp.toPx()))
+                    rotate(45f, Offset(28.dp.toPx(), 38.dp.toPx())) {
                         drawRoundRect(bg, tl, Size(s, s), CornerRadius(2.dp.toPx()))
                     }
                 }
-                // Head: 36 dp disc with a 2 dp ring and a drop shadow.
+                // Head: 36 dp disc.
                 Box(
-                    Modifier
-                        .offset(10.dp, 4.dp)
-                        .size(36.dp)
-                        .shadow(if (pin.lifted) 10.dp else 3.dp, CircleShape, clip = false)
-                        .background(ring, CircleShape)
-                        .padding(0.dp),
+                    Modifier.offset(10.dp, 4.dp).size(36.dp).background(bg, CircleShape),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Box(Modifier.size(36.dp).background(bg, CircleShape), contentAlignment = Alignment.Center) {
-                        Icon(
-                            imageVector = when {
-                                pin.done -> MapIcons.PinCheck
-                                priority == Priority.HIGH -> MapIcons.Flame
-                                priority == Priority.MEDIUM -> MapIcons.Star
-                                else -> MapIcons.Leaf
-                            },
-                            contentDescription = null,
-                            tint = fg,
-                            modifier = Modifier.size(18.dp),
-                        )
-                    }
+                    Icon(
+                        imageVector = when {
+                            pin.done -> MapIcons.PinCheck
+                            priority == Priority.HIGH -> MapIcons.Flame
+                            priority == Priority.MEDIUM -> MapIcons.Star
+                            else -> MapIcons.Leaf
+                        },
+                        contentDescription = null,
+                        tint = fg,
+                        modifier = Modifier.size(18.dp),
+                    )
                 }
                 if (pin.order != null) {
                     val orderBg = if (pin.done) MapColors.doneOrderBg(colors) else colors.textPrimary
