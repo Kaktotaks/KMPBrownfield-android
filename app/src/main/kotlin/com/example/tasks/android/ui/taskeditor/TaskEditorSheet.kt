@@ -6,6 +6,8 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModelStore
@@ -15,9 +17,11 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.tasks.android.TasksApplication
+import com.example.tasks.android.ui.components.placeSearchViewModelFactory
 import com.example.tasks.android.ui.components.voiceNoteDraftViewModelFactory
 import com.example.tasks.android.ui.voice.VoiceCardVariant
 import com.example.tasks.android.ui.voice.VoiceNoteSection
+import com.example.tasks.shared.presentation.PlaceSearchViewModel
 import com.example.tasks.shared.presentation.VoiceNoteUiState
 import com.example.tasks.shared.presentation.VoiceNoteViewModel
 import com.example.tasks.android.ui.theme.TasksShapes
@@ -70,6 +74,13 @@ fun TaskEditorSheet(taskId: Int, onDismiss: () -> Unit) {
         voiceViewModel.bindTo(viewModel)
         onDispose {}
     }
+    // Address search of the Place row (shared Nominatim search); owned by the same store, cleared with the sheet.
+    val placeSearch: PlaceSearchViewModel = viewModel(
+        viewModelStoreOwner = owner,
+        key = "place",
+        factory = remember(container) { placeSearchViewModelFactory(container) },
+    )
+    var showPlaceSearch by remember { mutableStateOf(false) }
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val model = remember(state) { state.toUiModel() }
     val colors = TasksTheme.colors
@@ -104,6 +115,25 @@ fun TaskEditorSheet(taskId: Int, onDismiss: () -> Unit) {
             },
             onCancel = cancel,
             voiceSection = { VoiceNoteSection(voiceViewModel, VoiceCardVariant.Editor) },
+            onTimeSelected = { viewModel.onTimeChange(it) },
+            onTimeCleared = { viewModel.onTimeChange(null) },
+            onPlaceClick = { showPlaceSearch = true },
+        )
+    }
+
+    if (showPlaceSearch) {
+        PlaceSearchSheet(
+            viewModel = placeSearch,
+            currentPlace = state.place,
+            onPick = {
+                viewModel.onPlaceChange(it)
+                showPlaceSearch = false
+            },
+            onClear = {
+                viewModel.onPlaceChange(null)
+                showPlaceSearch = false
+            },
+            onDismiss = { showPlaceSearch = false },
         )
     }
 }

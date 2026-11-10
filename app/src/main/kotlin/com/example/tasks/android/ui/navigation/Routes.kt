@@ -8,6 +8,10 @@ import kotlinx.serialization.Serializable
 @Serializable
 data object TasksGraph
 
+/** Tab graph: Map (the selected day's route). */
+@Serializable
+data object MapGraph
+
 /** Tab graph: Stats. */
 @Serializable
 data object StatsGraph
@@ -17,6 +21,9 @@ data object TaskListRoute
 
 @Serializable
 data class TaskDetailRoute(val taskId: Int)
+
+@Serializable
+data object MapRoute
 
 @Serializable
 data object StatsRoute

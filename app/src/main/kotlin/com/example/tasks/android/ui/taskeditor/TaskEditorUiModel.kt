@@ -1,6 +1,7 @@
 package com.example.tasks.android.ui.taskeditor
 
 import com.example.tasks.android.ui.components.SelectableOption
+import com.example.tasks.android.ui.map.formatTime
 import com.example.tasks.shared.domain.DateFormatting
 import com.example.tasks.shared.domain.Priority
 import com.example.tasks.shared.domain.ValidationError
@@ -23,6 +24,12 @@ data class TaskEditorUiModel(
     val notesError: String?,
     val dueDateError: String?,
     val canSave: Boolean,
+    /** Optional time of day ("14:30"); null = "No time". */
+    val timeText: String? = null,
+    val timeHour: Int? = null,
+    val timeMinute: Int? = null,
+    /** Short address of the optional place; null = "Add place". */
+    val placeAddress: String? = null,
 ) {
     /** Number of fields with an error: "Fix N fields to save this task." */
     val errorFieldCount: Int
@@ -41,6 +48,10 @@ fun TaskEditorUiState.toUiModel(): TaskEditorUiModel = TaskEditorUiModel(
     notesError = errors.firstOrNull { it == ValidationError.NOTES_TOO_LONG }?.message,
     dueDateError = errors.firstOrNull { it == ValidationError.DUE_DATE_IN_PAST }?.message,
     canSave = canSave,
+    timeText = time?.let(::formatTime),
+    timeHour = time?.hour,
+    timeMinute = time?.minute,
+    placeAddress = place?.address,
 )
 
 // DatePicker <-> kotlinx.datetime.LocalDate via epoch days (UTC midnight = whole days since 1970-01-01).

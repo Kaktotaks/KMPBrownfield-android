@@ -120,4 +120,105 @@
     <!-- Animated splash (design-handoff/splash). -->
     <string name="splash_wordmark">Tasks</string>
     <string name="splash_caption">One shared core · two native apps</string>
+
+    <!-- Map & daily routes (design-handoff/map, MAP_HANDOFF §9). Keys are mirrored by the uk file. -->
+    <string name="map_tab">Map</string>
+    <string name="map_a11y_map">Map</string>
+    <string name="map_day_today">Today</string>
+    <string name="map_day_tomorrow">Tomorrow</string>
+    <string name="map_day_yesterday">Yesterday</string>
+    <!-- java.time pattern for "Wed 4 Nov". -->
+    <string name="map_date_pattern" translatable="false">EEE d MMM</string>
+    <string name="map_sheet_title_today">Today’s route</string>
+    <plurals name="map_stops">
+        <item quantity="one">%d stop</item>
+        <item quantity="other">%d stops</item>
+    </plurals>
+    <string name="map_summary_ready">%1$s · %2$s · %3$s</string>
+    <string name="map_summary_loading">%1$s · Building route…</string>
+    <string name="map_summary_fallback">%1$s · Travel times unavailable</string>
+    <string name="map_summary_empty">Nothing planned with a place</string>
+    <string name="map_duration_hm">%1$d h %2$02d min</string>
+    <string name="map_duration_m">%1$d min</string>
+    <string name="map_distance_km">%1$s km</string>
+    <string name="map_next">Next · %1$s · %2$s away</string>
+    <string name="map_start">Start</string>
+    <string name="map_start_address">Dobrovoltsiv Ln 6</string>
+    <string name="map_start_address_long">Dobrovoltsiv Lane 6</string>
+    <string name="map_leave_by">Leave by %1$s</string>
+    <string name="map_left">Left %1$s</string>
+    <string name="map_leg">%1$s · %2$s</string>
+    <string name="map_stop_done">%1$s · Done</string>
+    <string name="map_stop_overdue">%1$s · Overdue</string>
+    <string name="map_no_time">No time</string>
+    <string name="map_recenter">Recenter</string>
+    <string name="map_empty_title">No tasks with a place on this day</string>
+    <string name="map_empty_body">Long-press the map to add one.</string>
+    <string name="map_chip_loading">Building route…</string>
+    <string name="map_chip_failed">Route unavailable — showing straight lines</string>
+    <string name="map_chip_offline">No connection. Map can’t load.</string>
+    <string name="map_retry">Retry</string>
+    <string name="map_priority_high">High</string>
+    <string name="map_priority_medium">Medium</string>
+    <string name="map_priority_low">Low</string>
+    <!-- New task here -->
+    <string name="map_new_here">New task here</string>
+    <string name="map_cancel">Cancel</string>
+    <string name="map_save">Save</string>
+    <string name="map_time">Time</string>
+    <string name="map_dropped_pin">Dnipro · dropped pin</string>
+    <string name="map_finding_address">Finding address…</string>
+    <string name="map_a11y_dropped_pin">Dropped pin, %1$s</string>
+    <string name="map_when_day_time">%1$s, %2$s</string>
+    <string name="map_time_row">%1$s · %2$s</string>
+    <!-- Task sheet -->
+    <string name="map_when_today">Today, %1$s</string>
+    <string name="map_when_stop">%1$s · Stop %2$d of %3$d</string>
+    <string name="map_when_untimed">%1$s · No time</string>
+    <string name="map_mark_done">Mark done</string>
+    <string name="map_edit">Edit</string>
+    <string name="map_move_pin">Move pin</string>
+    <string name="map_delete">Delete</string>
+    <string name="map_delete_title">Delete this task?</string>
+    <string name="map_close">Close</string>
+    <!-- Move pin -->
+    <string name="map_move_banner">Drag the pin to a new place</string>
+    <string name="map_move_cancel">Cancel</string>
+    <string name="map_move_done">Done</string>
+    <string name="map_move_card_title">New place</string>
+    <string name="map_move_card_body">The route updates when you tap Done.</string>
+    <!-- Accessibility -->
+    <string name="map_a11y_add_here">Add task here</string>
+    <string name="map_a11y_prev_day">Previous day</string>
+    <string name="map_a11y_next_day">Next day</string>
+    <string name="map_a11y_choose_day">Choose day, %1$s</string>
+    <string name="map_a11y_pin">%1$s, %2$s, %3$s priority%4$s, stop %5$d</string>
+    <string name="map_a11y_pin_untimed">%1$s, %2$s priority%3$s, no time</string>
+    <string name="map_a11y_flag_done">, done</string>
+    <string name="map_a11y_flag_overdue">, overdue</string>
+    <string name="map_a11y_flag_past">, time passed</string>
+    <string name="map_a11y_start">Start, %1$s</string>
+    <string name="map_a11y_stops_in_order">Stops in order</string>
+    <string name="map_a11y_route_sheet">Route sheet</string>
+    <string name="map_a11y_sheet_expand">Show all stops</string>
+    <string name="map_a11y_sheet_collapse">Show next stop only</string>
+    <string name="map_a11y_next">Next stop: %1$s, %2$s, %3$s priority, stop %4$d</string>
+    <string name="map_a11y_row_hint">%1$s. Shows the pin on the map.</string>
+    <string name="map_a11y_status_loading">Building route</string>
+    <!-- Editor: Time and Place -->
+    <string name="editor_time">Time</string>
+    <string name="editor_no_time">No time</string>
+    <string name="editor_place">Place</string>
+    <string name="editor_add_place">Add place</string>
+    <string name="editor_change_place">Change place</string>
+    <string name="editor_clear_place">Clear place</string>
+    <string name="editor_search_address">Search address</string>
+    <string name="editor_search_hint">Street and number</string>
+    <string name="editor_search_min">Type at least 3 characters.</string>
+    <string name="editor_search_none">No addresses found.</string>
+    <string name="editor_search_failed">Couldn’t search. Check your connection.</string>
+    <string name="editor_a11y_field">%1$s, %2$s</string>
+    <string name="editor_set_time">Set time</string>
+    <string name="editor_time_ok">OK</string>
+    <string name="map_address_city">%1$s, Dnipro</string>
 </resources>

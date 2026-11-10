@@ -72,6 +72,9 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.navigation.compose)
 
+    // Map tab: MapLibre Native (vector tiles + GeoJSON route layers) in an AndroidView; pins are a Compose overlay.
+    implementation(libs.maplibre.android)
+
     implementation(libs.kotlinx.coroutines.android)
     // Runtime for the @Serializable navigation routes (not for networking anymore).
     implementation(libs.kotlinx.serialization.json)

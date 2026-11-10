@@ -62,6 +62,44 @@ adb shell am start -S -n com.example.tasks.android/.MainActivity \
 | `forceVoiceError` (string) | `recordFailed` / `unavailable` | start throws -> "Couldn't record"; or the note cannot be played -> "Voice note unavailable" |
 | `seedVoice` (string) | `taskId:durationMs,...` | attaches a fake voice note (40 synthetic bars) to those tasks after the first load |
 
+## Map & daily routes
+
+A third tab (Tasks · Map · Stats) shows the selected day's tasks that have a **place** as numbered pins joined by a driving
+route from a fixed start (Dobrovoltsiv Ln 6, Dnipro). Everything that is not drawing (model, routing, geocoding, the map
+style JSON, past / overdue / next stop / leave by, the whole screen state) is shared's `MapViewModel`
+(see `shared/docs/MAP.md`); the app only renders it:
+
+- `ui/map/MapController` — MapLibre Native Android (`org.maplibre.gl:android-sdk`, pinned in `libs.versions.toml`): loads
+  `MapStyle.json(dark)` with `Style.Builder().fromJson`, draws the route as GeoJSON line layers (colours / widths / dashes from
+  `MapStyle.routePalette`), camera fit / focus.
+- `ui/map/MapLayer` — `MapView` in an `AndroidView` with lifecycle forwarding, inside ONE clipped `Box` together with the
+  Compose pin overlay (`TaskPinView`, `StartMarkerView`, dropped pin, move ghost) positioned with `projection.toScreenLocation`
+  on every camera move. Selector, chips, route sheet and the task / new-task sheets are siblings drawn after it, so pins can
+  never draw over them.
+- `ui/map/MapModels` — pure `MapUiState` -> screen model (rows, pins, chips, route lines, label collisions), unit-tested.
+- Editor: optional **Time** (M3 `TimePicker`) and **Place** (address search with shared `Geocoder`).
+
+### Debug-only screenshot hooks
+
+Same pattern as the splash and voice hooks (`app/src/debug`, no-ops in release). Any `map*` extra opens the Map tab. Clear
+the app data first so the demo route is seeded under the frozen clock:
+
+```
+adb shell pm clear com.example.tasks.android
+adb shell am start -n com.example.tasks.android/.MainActivity --ez disableSplash true \
+  --es mapFrozenNow 2026-11-04T12:40 --es mapDay 2026-11-04
+```
+
+| Extra | Values | Effect |
+|---|---|---|
+| `mapFrozenNow` | `2026-11-04T12:40` | freezes "now" for the whole app (repository, validators, Map) |
+| `mapDay` | `2026-11-04` | the day shown |
+| `mapSelect` | `3` | selects the stop with that route order (3 = Dentist, 2 = overdue passport photos) |
+| `mapExpanded` / `mapMove` | `true` | expands the route sheet / starts "Move pin" for `mapSelect` |
+| `mapNewHere` | `48.4647,35.0462` | long-press at that point ("New task here") |
+| `mapOffline` | `true` | shows the "No connection" chip and keeps it |
+| `mapOsrmHost` | `invalid` or a URL | routing host; `invalid` = `https://invalid.invalid` -> straight dashed lines + "Route unavailable" chip |
+
 ## Architecture
 
 ```

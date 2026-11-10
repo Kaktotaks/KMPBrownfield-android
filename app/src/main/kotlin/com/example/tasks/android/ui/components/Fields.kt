@@ -203,6 +203,74 @@ fun DateField(
     }
 }
 
+/**
+ * TimeField: looks like [DateField] (clock icon); tapping opens the M3 time picker (hosted by the screen).
+ * [valueText] is an AnnotatedString so a caller can bold the time ("Today, Wed 4 Nov · **16:30**"); [placeholder] = "No time" state.
+ */
+@Composable
+fun TimeField(
+    label: String,
+    valueText: androidx.compose.ui.text.AnnotatedString,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    isPlaceholder: Boolean = false,
+) {
+    val colors = TasksTheme.colors
+    val description = stringResource(R.string.a11y_date_field, label, valueText.text)
+    Column(modifier) {
+        FieldLabel(label)
+        Row(
+            Modifier
+                .padding(top = 6.dp)
+                .fieldChrome(focused = false, invalid = false, minHeight = 48.dp)
+                .clickable(role = Role.Button, onClick = onClick)
+                .semantics(mergeDescendants = true) { contentDescription = description }
+                .padding(horizontal = 14.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(valueText, style = TasksType.body, color = if (isPlaceholder) colors.textSecondary else colors.textPrimary)
+            Icon(TasksIcons.Clock, contentDescription = null, tint = colors.textPrimary, modifier = Modifier.size(20.dp))
+        }
+    }
+}
+
+/** PlaceField: looks like [DateField] (pin icon); tapping opens the address search (hosted by the sheet). */
+@Composable
+fun PlaceField(
+    label: String,
+    valueText: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    isPlaceholder: Boolean = false,
+) {
+    val colors = TasksTheme.colors
+    val description = stringResource(R.string.a11y_date_field, label, valueText)
+    Column(modifier) {
+        FieldLabel(label)
+        Row(
+            Modifier
+                .padding(top = 6.dp)
+                .fieldChrome(focused = false, invalid = false, minHeight = 48.dp)
+                .clickable(role = Role.Button, onClick = onClick)
+                .semantics(mergeDescendants = true) { contentDescription = description }
+                .padding(horizontal = 14.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                valueText,
+                style = TasksType.body,
+                color = if (isPlaceholder) colors.textSecondary else colors.textPrimary,
+                modifier = Modifier.weight(1f),
+                maxLines = 1,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+            )
+            Icon(com.example.tasks.android.ui.map.MapIcons.Pin, contentDescription = null, tint = colors.textPrimary, modifier = Modifier.size(20.dp))
+        }
+    }
+}
+
 /** ErrorBanner (§2): `dangerContainer`, r `m`, alert icon + text; the caller animates visibility. */
 @Composable
 fun ErrorBanner(text: String, modifier: Modifier = Modifier) {
