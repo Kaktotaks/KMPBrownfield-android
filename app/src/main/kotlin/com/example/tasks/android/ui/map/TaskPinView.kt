@@ -38,12 +38,11 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.graphics.Matrix
-import androidx.compose.ui.graphics.Outline
+import androidx.compose.ui.graphics.Paint
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathOperation
-import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.unit.Density
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TransformOrigin
@@ -78,15 +77,12 @@ internal object PinGeometry {
  * Outline of the whole pin body (56 x 50 dp box): the 40 dp ring circle at (8, 2) united with the tail ring, the 10 dp tail
  * square grown by 2 dp on every side (14 dp, corner 3 dp) and rotated 45 degrees about (28, 38).
  */
-private object PinOutlineShape : Shape {
-    override fun createOutline(size: Size, layoutDirection: LayoutDirection, density: Density): Outline {
-        val d = density.density
+private fun pinOutlinePath(d: Float): Path {
         val circle = Path().apply { addOval(Rect(8f * d, 2f * d, 48f * d, 42f * d)) }
         val tail = Path().apply { addRoundRect(RoundRect(Rect(-7f * d, -7f * d, 7f * d, 7f * d), CornerRadius(3f * d))) }
         tail.transform(Matrix().apply { rotateZ(45f) })
         tail.translate(Offset(28f * d, 38f * d))
-        return Outline.Generic(Path.combine(PathOperation.Union, circle, tail))
-    }
+        return Path.combine(PathOperation.Union, circle, tail)
 }
 
 private val pinSmallText = TextStyle(fontFamily = Inter, fontWeight = FontWeight.Bold, fontSize = 11.sp, lineHeight = 16.sp, fontFeatureSettings = "tnum")
@@ -169,12 +165,23 @@ internal fun TaskPinView(
             Box(Modifier.size(56.dp, 50.dp).alpha(pin.bodyOpacity)) {
                 // One teardrop: the 2 dp ring and the drop shadow follow the union of the head and the tail, drawn
                 // first; the coloured tail and head sit on top, so the tail reads as part of the bubble.
-                Box(
-                    Modifier
-                        .size(56.dp, 50.dp)
-                        .shadow(if (pin.lifted) 10.dp else 3.dp, PinOutlineShape, clip = false)
-                        .background(ring, PinOutlineShape),
-                )
+                // The shadow is painted with a blur layer instead of an elevation shadow: an elevation shadow of a
+                // non-convex outline inside a faded (alpha) layer draws a grey rectangle at the box corner.
+                Canvas(Modifier.size(56.dp, 50.dp)) {
+                    val path = pinOutlinePath(density)
+                    drawIntoCanvas { canvas ->
+                        val paint = Paint().apply {
+                            color = ring
+                            asFrameworkPaint().setShadowLayer(
+                                (if (pin.lifted) 9.dp else 3.dp).toPx(),
+                                0f,
+                                (if (pin.lifted) 10.dp else 2.dp).toPx(),
+                                Color.Black.copy(alpha = if (pin.lifted) 0.30f else 0.22f).toArgb(),
+                            )
+                        }
+                        canvas.drawPath(path, paint)
+                    }
+                }
                 Canvas(Modifier.size(56.dp, 50.dp)) {
                     val s = 10.dp.toPx()
                     val tl = Offset(23.dp.toPx(), 33.dp.toPx())
