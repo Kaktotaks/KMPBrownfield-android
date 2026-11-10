@@ -39,6 +39,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.CustomAccessibilityAction
@@ -63,7 +64,10 @@ import com.example.tasks.android.ui.theme.Inter
 import com.example.tasks.android.ui.theme.TasksTheme
 import com.example.tasks.android.ui.theme.TasksType
 import kotlinx.coroutines.CoroutineScope
+import kotlin.math.roundToInt
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 
 internal val COLLAPSED_SHEET_HEIGHT = 176.dp
@@ -128,12 +132,16 @@ internal fun RouteSheet(
         val target = if (expanded) expandedPx else collapsedPx
         if (reduce) height.snapTo(target) else height.animateTo(target, spring(dampingRatio = 0.85f, stiffness = Spring.StiffnessMediumLow))
     }
+    // The screen only needs the RESTING height (attribution margins), so it is reported when no animation is running
+    // (initially, and after every settle), never per drag frame: a per-frame state write recomposed the whole Map
+    // screen and re-poked the MapLibre view on every pixel of the drag.
     LaunchedEffect(Unit) {
-        snapshotFlow { height.value }.collectLatest { onHeightChange(with(density) { it.toDp() }) }
+        snapshotFlow { height.isRunning }.filter { !it }.collectLatest { onHeightChange(with(density) { height.value.toDp() }) }
     }
 
     val dragState = rememberDraggableState { delta ->
-        scope.launch { height.snapTo((height.value - delta).coerceIn(collapsedPx, expandedPx)) }
+        // UNDISPATCHED: the sheet follows the finger in the same frame instead of one dispatch later.
+        scope.launch(start = CoroutineStart.UNDISPATCHED) { height.snapTo((height.value - delta).coerceIn(collapsedPx, expandedPx)) }
     }
     // Velocity-aware snap to the nearest detent (a fling past 700 px/s goes that way), then a spring.
     val settle: suspend CoroutineScope.(Float) -> Unit = { velocity ->
@@ -151,7 +159,7 @@ internal fun RouteSheet(
     SheetSurface(
         modifier
             .fillMaxWidth()
-            .height(with(density) { height.value.toDp() })
+            .animatedHeight { height.value }
             .semantics { isTraversalGroup = true; contentDescription = routeSheetLabel },
         handle = {
             Box(
@@ -206,6 +214,16 @@ internal fun RouteSheet(
             }
         }
     }
+}
+
+/**
+ * Fixed height read in the LAYOUT phase: the animated/dragged value changes every frame, and reading it in
+ * composition (`Modifier.height(value.toDp())`) recomposed the sheet and its content on every drag pixel.
+ */
+internal fun Modifier.animatedHeight(heightPx: () -> Float): Modifier = layout { measurable, constraints ->
+    val h = heightPx().roundToInt().coerceIn(constraints.minHeight, constraints.maxHeight)
+    val placeable = measurable.measure(constraints.copy(minHeight = h, maxHeight = h))
+    layout(placeable.width, h) { placeable.place(0, 0) }
 }
 
 @Composable
