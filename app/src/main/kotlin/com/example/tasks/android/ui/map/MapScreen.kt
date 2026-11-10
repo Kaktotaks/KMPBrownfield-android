@@ -101,7 +101,13 @@ internal fun MapScreen(
                 lines = lines,
                 controller = controller,
                 onPinClick = onSelect,
-                onMapClick = { if (selected != null && !moving) onClearSelection() },
+                onMapClick = {
+                    if (selected != null && !moving) {
+                        onClearSelection()
+                    } else if (collapsesOnMapTap(state.sheetExpanded, selected != null, moving, draft != null)) {
+                        onSheetExpanded(false)
+                    }
+                },
                 onLongPress = onLongPress,
                 onMoveCandidate = onMoveCandidate,
                 onTilesOffline = onTilesOffline,

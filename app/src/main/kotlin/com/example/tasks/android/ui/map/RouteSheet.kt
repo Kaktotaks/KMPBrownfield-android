@@ -217,6 +217,13 @@ internal fun RouteSheet(
 }
 
 /**
+ * A short tap on empty map steps the expanded route sheet down to the collapsed state. Not while a pin is selected (that
+ * tap deselects), nor during the Move flow or a new-task draft, which keep their own behaviour.
+ */
+internal fun collapsesOnMapTap(expanded: Boolean, hasSelection: Boolean, moving: Boolean, hasDraft: Boolean): Boolean =
+    expanded && !hasSelection && !moving && !hasDraft
+
+/**
  * Fixed height read in the LAYOUT phase: the animated/dragged value changes every frame, and reading it in
  * composition (`Modifier.height(value.toDp())`) recomposed the sheet and its content on every drag pixel.
  */
